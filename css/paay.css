@@ -1,0 +1,231 @@
+#paay_box {
+
+}
+#paay_box .paay_input {
+    border-radius: 5px 5px 5px 5px;
+    display: block;
+    margin-top: 10px;
+}
+#paay_box .paay_text {
+    color: #699A4F;
+    display: block;
+    font-size: 12px;
+    height: 12px;
+    line-height: 12px;
+    margin-bottom: 5px;
+}
+#paay_box #paay_phone {
+    border: 1px solid #999999;
+    border-radius: 5px 0 0 5px;
+    margin-right: -8px;
+    padding-left: 5px;
+    width: 107px;
+    vertical-align:top;
+    margin-top: 1px;
+}
+#paay_box #paay_button {
+    background: url("../images/paay/stretchsprite.png") repeat scroll right -80px transparent;
+    border: 0 none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    height: 32px;
+    text-shadow: 0 -1px 0 #666666;
+    vertical-align:top;
+    padding:0 6px;
+    text-transform:uppercase;
+}
+#paay_overlay {
+    bottom: 0;
+    display: none;
+    font-family: 'arial';
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 2147483647;
+}
+#paay_overlay.checkout {
+    display: block;
+}
+#paay_overlay .paay_background {
+    background-color: #FFFFFF;
+    height: 100%;
+    opacity: 0.75;
+    position: absolute;
+    width: 100%;
+}
+#paay_overlay #paay_status_window {
+    background: url("../images/paay/bg.png") repeat scroll 0 0 transparent;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 0 0 65px 0 #666666;
+    height: 300px;
+    left: 50%;
+    margin-left: -200px;
+    margin-top: -150px;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    width: 541px;
+}
+#paay_overlay .paay_logo {
+    background: url("../images/paay/sprite.png") no-repeat scroll center bottom transparent;
+    height: 55px;
+    margin-top: 15px;
+}
+#paay_overlay .close_button {
+    background: url("../images/paay/sprite.png") no-repeat scroll 0 0 transparent;
+    cursor: pointer;
+    height: 15px;
+    position: absolute;
+    right: 5px;
+    top: 10px;
+    width: 15px;
+}
+#paay_overlay .dark_shadow_text {
+    text-shadow: 0 -1px 0 #666666;
+}
+#paay_overlay .white_text {
+    color: #FFFFFF;
+    font-size: 15px;
+}
+#paay_overlay .green_text {
+    color: #335C1C;
+}
+#paay_overlay .paay_status_area {
+    background: url("../images/paay/stretchsprite.png") repeat scroll 0 -600px transparent;
+    height: 51px;
+    margin: 5px auto;
+    padding: 1px;
+    position: relative;
+    width: 300px;
+}
+#paay_overlay .paay_status_area > .left, #paay_overlay .paay_status_area > .right {
+    background: url("../images/paay/stretchsprite.png") repeat scroll right -660px transparent;
+    float: right;
+    height: 51px;
+    margin-right: -16px;
+    margin-top: -1px;
+    width: 15px;
+}
+#paay_overlay .paay_status_area > .left {
+    background-position: 0 -540px;
+    float: left;
+    margin-left: -16px;
+}
+#paay_progress, #paay_status_bar {
+    background: url("../images/paay/stretchsprite.png") repeat scroll 0 -500px transparent;
+    height: 10px;
+    margin: 8px auto;
+    position: relative;
+    width: 240px;
+}
+#paay_progress > .left, #paay_progress > .right, #paay_status_bar > .left, #paay_status_bar > .right {
+    background: url("../images/paay/stretchsprite.png") repeat scroll right -520px transparent;
+    float: right;
+    height: 10px;
+    margin-right: -10px;
+    width: 10px;
+}
+#paay_status_bar > .left {
+    background-position: 0 -480px;
+    margin-left: -10px;
+    margin-right: auto;
+}
+#paay_progress {
+    background-position: 0 -750px;
+    left: 0;
+    margin: 0;
+    position: absolute;
+    width: 1%;
+}
+#paay_progress > .right {
+    background-position: right -770px;
+}
+#paay_progress > .left {
+    background-position: 0 -730px;
+    float: left;
+    margin-left: -10px;
+    margin-right: auto;
+}
+#paay_status_text {
+    color: #000000;
+    font-size: 25px;
+    line-height:25px;
+    margin: auto;
+    position: relative;
+    width: 400px;
+}
+#paay_overlay #paay_overlay_buttons {
+    bottom: 50px;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+}
+#paay_overlay .paay_refresh_notice {
+    bottom: 10px;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+}
+#paay_help_button, #paay_cancel_button {
+    background: none repeat scroll 0 0 transparent;
+    border: medium none;
+    text-decoration: underline;
+}
+i.icon_resend {
+    background: url("../images/paay/sprite.png") repeat scroll -3px -20px transparent;
+    float: left;
+    height: 18px;
+    margin-right: 5px;
+    margin-top: 6px;
+    width: 18px;
+}
+#paay_resend_button {
+    background: url("../images/paay/stretchsprite.png") repeat scroll 0 -160px transparent;
+    border: medium none;
+    border-radius: 5px 5px 5px 5px;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    height: 34px;
+    line-height: 32px;
+    overflow: visible;
+    padding: 0 10px;
+    text-shadow: 0 -1px 0 #666666;
+}
+#paay_resend_button > .left, #paay_resend_button > .right {
+    background: url("../images/paay/stretchsprite.png") repeat scroll right -200px transparent;
+    border: 1px solid red;
+    display: none;
+    float: right;
+    height: 34px;
+    margin-right: -10px;
+    padding: 0;
+    width: 10px;
+}
+#paay_resend_button > .left {
+    float: left;
+    margin: 0 auto 0 -10px;
+}
+
+.cart .checkout-types .paay-or {
+    line-height: 2.3;
+    margin: 0 8px;
+}
+
+.cart .totals .checkout-types .paay-or {
+    clear: both;
+    display: block;
+    font-size: 11px;
+    line-height: 1;
+    padding: 8px 55px 0 0;
+}
+
+.block-cart .actions .paay-or {
+    clear: both;
+    display: block;
+    padding: 8px 55px 8px 0;
+}
