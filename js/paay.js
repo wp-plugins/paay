@@ -118,7 +118,7 @@
             if( json_data.response.message == "Success")
             {
                 console.log(json_data);
-                var api_url = api.paay_handler_action+'?order_id='+json_data.response.order_id;
+                var api_url = api.paay_handler_action+'&order_id='+json_data.response.order_id;
 
                 gui.overlay_waiting();
                 api.send(api_url,events.handle_polling_reply);
