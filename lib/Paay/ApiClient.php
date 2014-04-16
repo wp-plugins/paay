@@ -76,6 +76,7 @@ class Paay_ApiClient
         $data = array(
             'phone_number' => $phoneNumber,
             'return_url' => $thanksUrl,
+            'signature' => $orderId,
             'cart_items' => base64_encode(json_encode(array(
                 'TransactionItem' => $cartItems,
                 'ShippingOption' => $shippingMethods,
@@ -87,6 +88,7 @@ class Paay_ApiClient
         $request->setOperation('addTransaction');
         $request->resource = 'transactions.json';
         $request->body = $data;
+
 
         $response = $this->connection->sendRequest($request);
         $result = json_decode($response->body);

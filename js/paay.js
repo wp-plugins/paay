@@ -56,16 +56,19 @@
             return true;
         },
         overlay_sending: function() {
+            this.overlay_resend_button.style.display = 'inline-block';
             this.progress_bar.style.width = "15%";
             this.progress_text.innerHTML = 'Sending confirmation.';
             this.status_text.innerHTML = 'We are now sending you your confirmation request.';
         },
         overlay_waiting: function() {
+            this.overlay_resend_button.style.display = 'none';
             this.progress_bar.style.width = "50%";
             this.progress_text.innerHTML = 'Awaiting approval.';
             this.status_text.innerHTML = 'Please check your phone now to approve this payment.';
         },
         overlay_approved: function() {
+            this.overlay_resend_button.style.display = 'none';
             this.progress_bar.style.width = "100%";
             this.progress_text.innerHTML = 'Transaction approved.';
             this.status_text.innerHTML = 'Approved!<br>Thanks for using Paay.';
@@ -82,6 +85,7 @@
             gui.overlay_close_button.addEventListener('click',events.handle_overlay_close_button_click);
             gui.overlay_cancel_button.addEventListener('click',events.handle_overlay_close_button_click);
             gui.phone_number.addEventListener('keydown',events.handle_phone_number_keydown);
+            gui.overlay_resend_button.addEventListener('click', events.handle_paay_button_click);
         },
         handle_phone_number_keydown: function(evnt) {
             if (evnt.keyCode == 13) {
