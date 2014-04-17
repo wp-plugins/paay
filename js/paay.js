@@ -3,12 +3,17 @@
     var api = {
         paay_handler_action: "/?page=paay_handler",
 
+        order_id:null,
+        callbacks_nb:0,
         callbacks:{},
         send: function(url,callback) {
             var request_time = new Date();
             var request_name = request_time.getTime();
 
             url += '&cb_name='+request_name;
+            if (null !== api.order_id) {
+                url += '&order_id=' + api.order_id;
+            }
 
             this.callbacks[request_name] = callback;
 
@@ -56,13 +61,13 @@
             return true;
         },
         overlay_sending: function() {
-            this.overlay_resend_button.style.display = 'inline-block';
+            this.overlay_resend_button.style.display = 'none';
             this.progress_bar.style.width = "15%";
             this.progress_text.innerHTML = 'Sending confirmation.';
             this.status_text.innerHTML = 'We are now sending you your confirmation request.';
         },
         overlay_waiting: function() {
-            this.overlay_resend_button.style.display = 'none';
+            this.overlay_resend_button.style.display = 'inline-block';
             this.progress_bar.style.width = "50%";
             this.progress_text.innerHTML = 'Awaiting approval.';
             this.status_text.innerHTML = 'Please check your phone now to approve this payment.';
@@ -95,6 +100,13 @@
             }
         },
         handle_paay_button_click: function(evnt) {
+            api.callbacks_nb++;
+
+            if (api.callbacks_nb > 3) {
+                alert('You can send confirmation only 3 times.');
+                return;
+            }
+
             var nums_regex = /[0-9]/gi;
             var number = gui.phone_number.value;
             var numbers = number.match(nums_regex);
@@ -121,7 +133,7 @@
         handle_payment_reply: function(json_data) {
             if( json_data.response.message == "Success")
             {
-                console.log(json_data);
+                api.order_id = json_data.response.order_id;
                 var api_url = api.paay_handler_action+'&order_id='+json_data.response.order_id;
 
                 gui.overlay_waiting();
@@ -154,7 +166,6 @@
                     case 'approved':
                         gui.overlay_approved();
                         gui.handle_polling_reply_timeout = window.setTimeout(function(){
-                            console.log("Redirecting to " + json_data.response.data.Transaction.return_url);
                             top.location.href = json_data.response.data.Transaction.return_url;
                         },3000);
                         break;

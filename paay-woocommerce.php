@@ -208,7 +208,9 @@ function paay_handler()
             $orderId = $_GET['order_id'];
             $result = $apiClient->checkTransactionStatus($orderId);
         } else {
-            $result = $apiClient->addTransaction($phoneNumber, $callbackName, $wc->getCart(), $wc->getShipping());
+            //if order_id is null - new order is created, otherwise, we're using existing order.
+            $orderId = (isset($_GET['order_id'])) ? trim($_GET['order_id']) : null;
+            $result = $apiClient->addTransaction($phoneNumber, $callbackName, $wc->getCart(), $wc->getShipping(), $orderId);
         }
         $response = "paay_app.handle_callback(" . $callbackName .", $result)";
 

@@ -23,9 +23,13 @@ class Paay_ApiClient
     }
 
     /**
+     * Creates PAAY Transaction - if orderId is null,
+     * a new WP_Order is created, otherwise existing WP_Order is being
+     * used to create transaction
+     *
      * @param string $phoneNumber
      */
-    public function addTransaction($phoneNumber, $callbackName, $wcCart, $wcShipping)
+    public function addTransaction($phoneNumber, $callbackName, $wcCart, $wcShipping, $orderId = null)
     {
         $addressId = '';
         $customer = $this->getCustomerByPhone($phoneNumber);
@@ -35,7 +39,7 @@ class Paay_ApiClient
         }
         $this->wc->getCart()->calculate_totals();
 
-        $orderId = $this->wc->createOrder($customer);
+        $orderId = (null === $orderId) ? $this->wc->createOrder($customer) : $orderId;
         $order = new WC_Order($orderId);
 
         $thanksPageId = woocommerce_get_page_id('thanks');
