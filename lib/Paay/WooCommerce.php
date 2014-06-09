@@ -111,8 +111,8 @@ class Paay_WooCommerce
             $order->shipping_method_title = $shipping->name;
             $order->shipping_method = strtolower(str_replace(' ', '_', $shipping->name));
             $order->shipping = $shipping->cost;
-
             $order->payment_complete();
+
             return;
         }
 
