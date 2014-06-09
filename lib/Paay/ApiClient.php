@@ -196,7 +196,7 @@ class Paay_ApiClient
                 .(string)$result->response->data);
         }
 
-        return $result->customers[0];
+        return ($paramName == 'id') ? $result->response->data : $result->customers[0];
     }
 
     /**
