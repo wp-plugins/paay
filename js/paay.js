@@ -151,7 +151,7 @@
                 switch(json_data.response.data.Transaction.state) {
                     case 'pending':
                         // check again soon
-                        var api_url = api.paay_handler_action+'?order_id='+json_data.response.order_id;
+                        var api_url = api.paay_handler_action+'&order_id='+json_data.response.order_id;
 
                         gui.handle_polling_reply_timeout = window.setTimeout(function(){
                             api.send(api_url,events.handle_polling_reply);
