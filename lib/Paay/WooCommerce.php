@@ -100,14 +100,20 @@ class Paay_WooCommerce
             $order = new WC_Order($orderId);
 
             if (null !== $address->id) {
-                $order->shipping_first_name = $order->billing_first_name;
-                $order->shipping_last_name = $order->billing_last_name;
-                $order->shipping_address_1 = $address->address1;
-                $order->shipping_address_2 = $address->address2;
-                $order->shipping_city = $address->city;
-                $order->shipping_state = $address->state;
-                $order->shipping_postcode = $address->zip;
+                $address_data = array(
+                    'shipping_first_name' => $order->billing_first_name,
+                    'shipping_last_name' => $order->billing_last_name,
+                    'shipping_address_1' => $address->address1,
+                    'shipping_address_2' => $address->address2,
+                    'shipping_city' => $address->city,
+                    'shipping_state' => $address->state,
+                    'shipping_postcode' => $address->zip,
+                );
+                foreach ($address_data as $key => $value) {
+                     update_post_meta($order->id, '_'.$key, $value);
+                }
             }
+
             $order->shipping_method_title = $shipping->name;
             $order->shipping_method = strtolower(str_replace(' ', '_', $shipping->name));
             $order->shipping = $shipping->cost;
