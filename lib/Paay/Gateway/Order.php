@@ -77,7 +77,7 @@ class Paay_Gateway_Order
         $this->transaction['Address']['zip'] = $order->shipping_postcode;
 
         //Shipping
-        $this->transaction['ShippingOption']['name'] = $order->shipping_method_title;
+        $this->transaction['ShippingOption']['name'] = ('' !== $order->shipping_method_title) ? $order->shipping_method_title : $order->get_shipping_method();
         $this->transaction['ShippingOption']['cost'] = $order->order_shipping;
         $this->transaction['ShippingOption']['tax'] = $order->order_shipping_tax;
 
