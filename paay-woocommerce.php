@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: PAAY for WooCommerce
-Plugin URI: http://paay.com/todo
+Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
 Version: 0.1
 Author: PAAY
-Author URI: http://paay.com
+Author URI: http://www.paay.co/
 License: GPL2
 */
 
