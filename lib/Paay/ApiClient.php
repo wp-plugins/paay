@@ -53,7 +53,7 @@ class Paay_ApiClient
             $cartItems[] = array(
                 'description' => $product->get_title(),
                 'quantity' => $item['qty'],
-                'unit_price' => $product->get_price(),
+                'unit_price' => round(($product->get_price() / $item['qty']), 2),
             );
         }
 

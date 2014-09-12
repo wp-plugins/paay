@@ -83,11 +83,11 @@ class Paay_Gateway_Order
 
         //Items
         $items = $order->get_items();
-        foreach($items as $item) {
+        foreach ($items as $item) {
             $this->transaction['TransactionItem'][] = array(
                 'description' => $item['name'],
                 'quantity' => $item['qty'],
-                'unit_price' => $item['line_subtotal'],
+                'unit_price' => round(($item['line_subtotal'] / $item['qty']), 2),
             );
         }
     }
