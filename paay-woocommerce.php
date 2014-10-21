@@ -222,3 +222,120 @@ function paay_handler()
     echo $response;
     exit;
 }
+
+function paay_parse_form($form_html)
+{
+    $data = str_replace("\n", '', $form_html);
+    $data = stripcslashes($data);
+
+    $dom = str_get_html($data);
+    $form = $dom->find('form', 0);
+    $forms = array($form);
+    // $forms = $dom->find('form');
+
+    $forms_html = '';
+    foreach ($forms as $form) {
+        $form->class = '';
+
+        //Remove all noscript tags
+        $noscripts = $form->find('noscript');
+        if (!empty($noscripts)) {
+            foreach ($noscripts as $noscript) {
+                $noscript->outertext = '';
+            }
+        }
+
+        //Remove existing submits
+        $submits = $form->find('input[type="submit"]');
+        if (!empty($submits)) {
+            foreach ($submits as $submit) {
+                $submit->outertext = '';
+            }
+        }
+
+        //Remove built in form styles
+        //Labels
+        $labels = $form->find('label');
+        $labels_set = array();
+        foreach ($labels as $label) {
+            if (!empty($label->for)) {
+                $label->class = '';
+                $labels_set[$label->for] = $label;
+            }
+        }
+
+        //Inputs
+        $inputs = $form->find('input[type!="submit"], select, textarea');
+        $inputs_set = array();
+        foreach ($inputs as $input) {
+            $input->class = '';
+            if (!empty($input->id)) {
+                $inputs_set[$input->id] = $input;
+            } else {
+                $inputs_set['paay-'.uniqid()] = $input;
+            }
+        }
+
+        //Connect labels with inputs
+        $inputs_html = '<ul>';
+        //labelled inputs
+        foreach ($labels_set as $key => $label) {
+            if (isset($inputs_set[$key])) {
+                $inputs_html .= '<li>'.$label->__toString().$inputs_set[$key]->__toString().'</li>';
+                unset($inputs_set[$key]);
+            }
+        }
+        //inputs without labels
+        foreach ($inputs_set as $key => $input) {
+            $inputs_html .= '<li>'.$input->__toString().'</li>';
+        }
+        $inputs_html .= '</ul>';
+        $form->innertext = $inputs_html;
+
+        //Add PAAY submit
+        $form->innertext = $form->innertext.'<input type="submit" value="Proceed to PAAY" />';
+
+        $forms_html .= $form->__toString();
+    }
+
+    //Add Paay headers, borders, styles
+    $html .= '';
+    $html .= '<style type="text/css">
+        .paay-3ds-form { border: 2px solid #3e7925; color: #3e7925; background-color: #ffffff; border-radius: 5px; padding: 3% 5%; }
+        .paay-3ds-form .paay-header { display: block; margin: 5px auto; width: 30%; }
+        .paay-3ds-form .paay-3ds-info { color: #666; }
+        .paay-3ds-form label { display: inline-block; width: 20%; }
+        .paay-3ds-form input, .paay-3ds-form select, .paay-3ds-form textarea { width: 80%; background-color: #ffffff; color: #000000; }
+        .paay-3ds-form ul { list-style: none; margin: 0px; padding: 0px; }
+        .paay-3ds-form ul li { list-style: none; margin: 5px 0px; padding: 0px; }
+        .paay-3ds-form input[type="submit"] { width: 100%; background-color: #3e7925; color: #ffffff; }
+        .paay-3ds-form .paay-terms { margin: 5px 0px 0px 0px; }
+        .paay-3ds-form .paay-terms ul { clear: both; overflow: hidden; }
+        .paay-3ds-form .paay-terms ul li { display: inline; padding: 0 20px; margin: 0px; }
+        .paay-3ds-form .paay-terms a, .paay-3ds-form .paay-terms a:hover { color: #3e7925; font-size: 0.8em; text-decoration: none; }
+        .paay-3ds-form .paay-terms a:hover { text-decoration: underline; }
+    </style>';
+    $html .= '<div class="paay-3ds-form">';
+    $html .= '<img src="https://www.paay.co/wp-content/uploads/2014/01/paay-logo.png" class="paay-header" alt="PAAY logo" />';
+    $html .= '<div class="paay-3ds-info">Every PAAY transaction goes straight to your phone where you can verify and confirm or cancel the order. The only information the merchant sees is the transaction, not your credit card numbers.</div>';
+    $html .= $forms_html;
+    $html .= '<div class="paay-terms">
+        <ul class="paay-terms-menu">
+            <li><a target="_new" title="About Us" href="http://www.paay.co/about-us/">About</a></li>
+            <li><a target="_new" title="Contact Us" href="http://www.paay.co/contact/">Contact Us</a></li>
+            <li><a target="_new" title="Terms Of Use" href="https://paay.desk.com/customer/portal/articles/1431750-terms-of-use">Terms Of Use</a></li>
+            <li><a target="_new" title="Privacy Policy" href="https://paay.desk.com/customer/portal/articles/1431748-privacy-policy">Privacy Policy</a></li>
+        </ul>
+    </div>';
+    $html .= '</div>';
+
+    return $html;
+}
+
+function paay_test_form()
+{
+    // $data = file_get_contents('http://paay-acs.vag/doubleform');
+    $data = file_get_contents('http://paay-acs.vag/default');
+
+    return paay_parse_form($data);
+}

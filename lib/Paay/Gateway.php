@@ -167,32 +167,7 @@ class Paay_Gateway extends WC_Payment_Gateway
                 $order->update_status('on-hold', __('Awaiting PAAY payment', 'woocommerce'));
                 $order->reduce_order_stock();
 
-                $data = str_replace("\n", '', $data);
-                $data = stripcslashes($data);
-                
-                $dom = str_get_html($data);
-                $form = $dom->find('form', 0);
-                
-                //Remove all noscript tags
-                $noscripts = $form->find('noscript');
-                if (!empty($noscripts)) {
-                    foreach ($noscripts as $noscript) {
-                        $noscript->outertext = '';
-                    }
-                }
-
-                //Remove existing submits
-                $submits = $form->find('input[type="submit"]');
-                if (!empty($submits)) {
-                    foreach ($submits as $submit) {
-                        $submit->outertext = '';
-                    }
-                }
-
-                //Add PAAY submit
-                $form->innertext = $form->innertext.'<input type="submit" value="Proceed to PAAY" />';
-
-                echo $form->__toString();
+                echo paay_parse_form($data);
                 exit;
             }
         }
