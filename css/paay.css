@@ -1,10 +1,21 @@
 #paay_box {
-
+    height: 70px;
+    padding-top: 10px;
+    clear: both;
+    overflow: hidden;
 }
 #paay_box .paay_input {
-    border-radius: 5px 5px 5px 5px;
+    text-align: right;
+    width: 160px;
+    border-radius: 5px;
+    padding: 5px;
     display: block;
-    margin-top: 10px;
+    float: right;
+    background-color: #ffffff;
+
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
 }
 #paay_box .paay_text {
     color: #699A4F;
@@ -15,26 +26,42 @@
     margin-bottom: 5px;
 }
 #paay_box #paay_phone {
-    border: 1px solid #999999;
+    padding: 0px 0px 0px 5px;
+    border-top: 1px solid #999999;
+    border-bottom: 1px solid #999999;
+    border-left: 1px solid #999999;
+    border-right: 0px;
     border-radius: 5px 0 0 5px;
-    margin-right: -8px;
-    padding-left: 5px;
-    width: 107px;
-    vertical-align:top;
-    margin-top: 1px;
+    width: 103px;
+    vertical-align: top;
+    line-height: 30px;
+    float: left;
+    font-size: 14px;
+    font-weight: normal;
+    font-family: 'Source Sans Pro', Helvetica, sans-serif;
+
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 #paay_box #paay_button {
+    width: 57px;
     background: url("../images/paay/stretchsprite.png") repeat scroll right -80px transparent;
     border: 0 none;
     color: #FFFFFF;
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
+    font-family: 'Source Sans Pro', Helvetica, sans-serif;
     height: 32px;
     text-shadow: 0 -1px 0 #666666;
-    vertical-align:top;
-    padding:0 6px;
-    text-transform:uppercase;
+    vertical-align: top;
+    padding: 0 6px;
+    text-transform: uppercase;
+    border-radius: 0px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    float: right;
 }
 #paay_overlay {
     bottom: 0;
