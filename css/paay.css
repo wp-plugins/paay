@@ -229,3 +229,18 @@ i.icon_resend {
     display: block;
     padding: 8px 55px 8px 0;
 }
+
+.paay-box { border: 2px solid #3e7925; color: #3e7925; background-color: #ffffff; border-radius: 5px; padding: 3% 5%; }
+.paay-box.paay-type-error { border: 2px solid red; }
+.paay-box .paay-header { display: block; margin: 5px auto; width: 30%; }
+.paay-box .paay-info { color: #666; }
+.paay-box label { display: inline-block; width: 20%; }
+.paay-box input, .paay-box select, .paay-box textarea { width: 80%; background-color: #ffffff; color: #000000; }
+.paay-box ul { list-style: none; margin: 0px; padding: 0px; }
+.paay-box ul li { list-style: none; margin: 5px 0px; padding: 0px; }
+.paay-box input[type="submit"] { width: 100%; background-color: #3e7925; color: #ffffff; }
+.paay-box .paay-terms { margin: 5px 0px 0px 0px; }
+.paay-box .paay-terms ul { clear: both; overflow: hidden; }
+.paay-box .paay-terms ul li { display: inline; padding: 0 20px; margin: 0px; }
+.paay-box .paay-terms a, .paay-box .paay-terms a:hover { color: #3e7925; font-size: 0.8em; text-decoration: none; }
+.paay-box .paay-terms a:hover { text-decoration: underline; }

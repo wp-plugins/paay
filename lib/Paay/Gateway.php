@@ -170,6 +170,9 @@ class Paay_Gateway extends WC_Payment_Gateway
                 echo paay_parse_form($data);
                 exit;
             }
+        } else {
+            echo paay_parse_error($response);
+            exit;
         }
     }
 }

@@ -31,6 +31,8 @@ add_filter('woocommerce_payment_gateways', 'add_paay_gateway_class');
 add_action('admin_head', 'paay_gateway_admin_css');
 
 add_action('init', 'paay_handler');
+wp_enqueue_style('paay', plugins_url('/css/paay.css', __FILE__));
+wp_enqueue_script('paay', plugins_url('/js/paay.js', __FILE__), array(), false, true);
 
 function paay_gateway_admin_css()
 {
@@ -140,8 +142,6 @@ function paay_options_page()
 
 function paay_checkout()
 {
-    wp_enqueue_style( 'paay', plugins_url('/css/paay.css', __FILE__));
-    wp_enqueue_script( 'paay', plugins_url('/js/paay.js', __FILE__), array(), false, false );
     ?>
     <div id="paay_box">
     <div class="paay_input">
@@ -223,6 +223,24 @@ function paay_handler()
     exit;
 }
 
+function paay_template($template, $var = array())
+{
+    ob_start();
+    include dirname(__FILE__).'/templates/'.$template.'.php';
+    $contents = ob_get_clean();
+
+    return $contents;
+}
+
+function paay_box($info, $content = '', $type = 'success')
+{
+    return paay_template('paay_box', array(
+        'type'      => $type,
+        'info'      => $info,
+        'content'   => $content
+    ));
+}
+
 function paay_parse_form($form_html)
 {
     $data = str_replace("\n", '', $form_html);
@@ -298,44 +316,15 @@ function paay_parse_form($form_html)
         $forms_html .= $form->__toString();
     }
 
-    //Add Paay headers, borders, styles
-    $html .= '';
-    $html .= '<style type="text/css">
-        .paay-3ds-form { border: 2px solid #3e7925; color: #3e7925; background-color: #ffffff; border-radius: 5px; padding: 3% 5%; }
-        .paay-3ds-form .paay-header { display: block; margin: 5px auto; width: 30%; }
-        .paay-3ds-form .paay-3ds-info { color: #666; }
-        .paay-3ds-form label { display: inline-block; width: 20%; }
-        .paay-3ds-form input, .paay-3ds-form select, .paay-3ds-form textarea { width: 80%; background-color: #ffffff; color: #000000; }
-        .paay-3ds-form ul { list-style: none; margin: 0px; padding: 0px; }
-        .paay-3ds-form ul li { list-style: none; margin: 5px 0px; padding: 0px; }
-        .paay-3ds-form input[type="submit"] { width: 100%; background-color: #3e7925; color: #ffffff; }
-        .paay-3ds-form .paay-terms { margin: 5px 0px 0px 0px; }
-        .paay-3ds-form .paay-terms ul { clear: both; overflow: hidden; }
-        .paay-3ds-form .paay-terms ul li { display: inline; padding: 0 20px; margin: 0px; }
-        .paay-3ds-form .paay-terms a, .paay-3ds-form .paay-terms a:hover { color: #3e7925; font-size: 0.8em; text-decoration: none; }
-        .paay-3ds-form .paay-terms a:hover { text-decoration: underline; }
-    </style>';
-    $html .= '<div class="paay-3ds-form">';
-    $html .= '<img src="https://www.paay.co/wp-content/uploads/2014/01/paay-logo.png" class="paay-header" alt="PAAY logo" />';
-    $html .= '<div class="paay-3ds-info">Every PAAY transaction goes straight to your phone where you can verify and confirm or cancel the order. The only information the merchant sees is the transaction, not your credit card numbers.</div>';
-    $html .= $forms_html;
-    $html .= '<div class="paay-terms">
-        <ul class="paay-terms-menu">
-            <li><a target="_new" title="About Us" href="http://www.paay.co/about-us/">About</a></li>
-            <li><a target="_new" title="Contact Us" href="http://www.paay.co/contact/">Contact Us</a></li>
-            <li><a target="_new" title="Terms Of Use" href="https://paay.desk.com/customer/portal/articles/1431750-terms-of-use">Terms Of Use</a></li>
-            <li><a target="_new" title="Privacy Policy" href="https://paay.desk.com/customer/portal/articles/1431748-privacy-policy">Privacy Policy</a></li>
-        </ul>
-    </div>';
-    $html .= '</div>';
+    $info = 'Every PAAY transaction goes straight to your phone where you can verify and confirm or cancel the order. The only information the merchant sees is the transaction, not your credit card numbers.';
 
-    return $html;
+    return paay_box($info, $forms_html);
 }
 
-function paay_test_form()
+function paay_parse_error($response)
 {
-    // $data = file_get_contents('http://paay-acs.vag/doubleform');
-    $data = file_get_contents('http://paay-acs.vag/default');
+    $message = (isset($response['response']['data']) && !empty($response['response']['data'])) ? $response['response']['data'] : 'Transaction processing failed';
+    $fid = (isset($response['response']['fid']) && !empty($response['response']['fid'])) ? $response['response']['fid'] : '';
 
-    return paay_parse_form($data);
+    return paay_box($message.' If it\'s still not working, please contact PAAY and provide this number: '.$fid, '', 'error');
 }

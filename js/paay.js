@@ -202,3 +202,10 @@
         paay_app.init();
     });
 })();
+
+
+jQuery(function($) {
+    $('body').on('checkout_error', function() {
+        $('.paay-box').not(':first').remove();
+    });
+});
