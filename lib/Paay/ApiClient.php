@@ -33,6 +33,9 @@ class Paay_ApiClient
     {
         $addressId = '';
         $customer = $this->getCustomerByPhone($phoneNumber);
+        if (empty($customer)) {
+            return json_encode(array('response' => array('data' => 'We couldn\'t find your phone number: '.$phoneNumber.'. Are you sure you have PAAY account?')));
+        }
 
         if (isset($customer->Address[0])) {
             $addressId = (string)$customer->Address[0]->id;
