@@ -103,7 +103,7 @@
             api.callbacks_nb++;
 
             if (api.callbacks_nb > 3) {
-                alert('You can send confirmation only 3 times.');
+                alertify.alert('You can send confirmation only 3 times.');
                 return;
             }
 
@@ -113,7 +113,7 @@
             var phone_number = (numbers === null) ? false : numbers.join('');
 
             if (phone_number === false || phone_number.length != 10) {
-                alert('Please ensure your phone number is typed correctly:\n + no leading 1\n + US numbers only');
+                alertify.alert('Please ensure your phone number is typed correctly:\n + no leading 1\n + US numbers only');
             } else {
                 gui.overlay.style.display = 'block';
                 var api_url = api.paay_handler_action+'&cancel=true&';
@@ -141,7 +141,7 @@
             }
             else
             {
-                alert("Server error: "+ json_data.response.data);
+                alertify.alert(json_data.response.data);
                 gui.overlay_denied();
             }
         },
@@ -159,7 +159,7 @@
                         break;
 
                     case 'user_declined':
-                        alert("User declined");
+                        alertify.alert("User declined");
                         gui.overlay_denied();
                         break;
 
@@ -173,7 +173,7 @@
             }
             else
             {
-                alert("Server error: "+ json_data.response.data);
+                alertify.alert(json_data.response.data);
                 gui.overlay_denied();
             }
         }

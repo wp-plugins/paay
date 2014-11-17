@@ -31,7 +31,12 @@ add_filter('woocommerce_payment_gateways', 'add_paay_gateway_class');
 add_action('admin_head', 'paay_gateway_admin_css');
 
 add_action('init', 'paay_handler');
+
+wp_enqueue_style('alertify_theme_core', plugins_url('/js/alertify/themes/alertify.core.css', __FILE__));
+wp_enqueue_style('alertify_theme_default', plugins_url('/js/alertify/themes/alertify.default.css', __FILE__));
 wp_enqueue_style('paay', plugins_url('/css/paay.css', __FILE__));
+
+wp_enqueue_script('alertify', plugins_url('/js/alertify/lib/alertify.min.js', __FILE__), array(), false, true);
 wp_enqueue_script('paay', plugins_url('/js/paay.js', __FILE__), array(), false, true);
 
 function paay_gateway_admin_css()

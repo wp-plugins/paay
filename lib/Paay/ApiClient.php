@@ -34,7 +34,7 @@ class Paay_ApiClient
         $addressId = '';
         $customer = $this->getCustomerByPhone($phoneNumber);
         if (empty($customer)) {
-            return json_encode(array('response' => array('data' => 'We couldn\'t find your phone number: '.$phoneNumber.'. Are you sure you have PAAY account?')));
+            return json_encode(array('response' => array('data' => 'Welcome to PAAY! You will get a text on how to download your wallet.')));
         }
 
         if (isset($customer->Address[0])) {
