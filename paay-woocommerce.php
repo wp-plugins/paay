@@ -32,11 +32,7 @@ add_action('admin_head', 'paay_gateway_admin_css');
 
 add_action('init', 'paay_handler');
 
-wp_enqueue_style('alertify_theme_core', plugins_url('/js/alertify/themes/alertify.core.css', __FILE__));
-wp_enqueue_style('alertify_theme_default', plugins_url('/js/alertify/themes/alertify.default.css', __FILE__));
 wp_enqueue_style('paay', plugins_url('/css/paay.css', __FILE__));
-
-wp_enqueue_script('alertify', plugins_url('/js/alertify/lib/alertify.min.js', __FILE__), array(), false, true);
 wp_enqueue_script('paay', plugins_url('/js/paay.js', __FILE__), array(), false, true);
 
 function paay_gateway_admin_css()
@@ -160,7 +156,7 @@ function paay_checkout()
         <div id="paay_overlay_close_button" class="close_button"></div>
         <div class="paay_logo"></div>
         <div class="white_text dark_shadow_text"><?php echo __('Thank you for choosing Paay.'); ?></div>
-        <div class="paay_status_area">
+        <div id="paay_status_area" class="paay_status_area">
             <span class="right"></span>
             <span class="left"></span>
             <div id="paay_status_bar">

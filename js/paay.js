@@ -53,6 +53,7 @@
                 this.status_text = document.getElementById('paay_status_text');
                 this.overlay_close_button = document.getElementById('paay_overlay_close_button');
                 this.overlay_cancel_button = document.getElementById('paay_cancel_button');
+                this.paay_status_area = document.getElementById('paay_status_area');
                 this.overlay_resend_button = document.getElementById('paay_resend_button');
                 this.overlay_help_button = document.getElementById('paay_help_button');
             } else {
@@ -63,23 +64,39 @@
         overlay_sending: function() {
             this.overlay_resend_button.style.display = 'none';
             this.progress_bar.style.width = "15%";
+            this.progress_bar.style.display = 'block';
+            this.paay_status_area.style.display = 'block';
+            this.overlay_cancel_button.style.display = 'inline';
             this.progress_text.innerHTML = 'Sending confirmation.';
             this.status_text.innerHTML = 'We are now sending you your confirmation request.';
         },
         overlay_waiting: function() {
             this.overlay_resend_button.style.display = 'inline-block';
             this.progress_bar.style.width = "50%";
+            this.progress_bar.style.display = 'block';
+            this.paay_status_area.style.display = 'block';
+            this.overlay_cancel_button.style.display = 'inline';
             this.progress_text.innerHTML = 'Awaiting approval.';
             this.status_text.innerHTML = 'Please check your phone now to approve this payment.';
         },
         overlay_approved: function() {
             this.overlay_resend_button.style.display = 'none';
             this.progress_bar.style.width = "100%";
+            this.progress_bar.style.display = 'block';
+            this.paay_status_area.style.display = 'block';
+            this.overlay_cancel_button.style.display = 'inline';
             this.progress_text.innerHTML = 'Transaction approved.';
             this.status_text.innerHTML = 'Approved!<br>Thanks for using Paay.';
         },
         overlay_denied: function() {
             this.overlay.style.display="none";
+        },
+        message: function(message) {
+            this.overlay_resend_button.style.display = 'none';
+            this.progress_bar.style.display = 'none';
+            this.overlay_cancel_button.style.display = 'none';
+            this.paay_status_area.style.display = 'none';
+            this.status_text.innerHTML = message;
         }
     };
 
@@ -103,7 +120,7 @@
             api.callbacks_nb++;
 
             if (api.callbacks_nb > 3) {
-                alertify.alert('You can send confirmation only 3 times.');
+                gui.message('You can send confirmation only 3 times.');
                 return;
             }
 
@@ -113,7 +130,7 @@
             var phone_number = (numbers === null) ? false : numbers.join('');
 
             if (phone_number === false || phone_number.length != 10) {
-                alertify.alert('Please ensure your phone number is typed correctly:\n + no leading 1\n + US numbers only');
+                gui.message('Please ensure your phone number is typed correctly:\n + no leading 1\n + US numbers only');
             } else {
                 gui.overlay.style.display = 'block';
                 var api_url = api.paay_handler_action+'&cancel=true&';
@@ -141,8 +158,7 @@
             }
             else
             {
-                alertify.alert(json_data.response.data);
-                gui.overlay_denied();
+                gui.message(json_data.response.data);
             }
         },
         handle_polling_reply: function(json_data) {
@@ -159,8 +175,8 @@
                         break;
 
                     case 'user_declined':
-                        alertify.alert("User declined");
-                        gui.overlay_denied();
+                        gui.message("User declined");
+                        // gui.overlay_denied();
                         break;
 
                     case 'approved':
@@ -173,8 +189,7 @@
             }
             else
             {
-                alertify.alert(json_data.response.data);
-                gui.overlay_denied();
+                gui.message(json_data.response.data);
             }
         }
     };
