@@ -1,10 +1,10 @@
-#paay_box {
-    height: 70px;
+.paay-button-box {
+    height: 90px;
     padding-top: 10px;
     clear: both;
     overflow: hidden;
 }
-#paay_box .paay_input {
+.paay-button-box .paay-input {
     text-align: right;
     width: 160px;
     border-radius: 5px;
@@ -17,7 +17,7 @@
     -moz-box-sizing: content-box;
     box-sizing: content-box;
 }
-#paay_box .paay_text {
+.paay-button-box .paay-text {
     color: #699A4F;
     display: block;
     font-size: 12px;
@@ -25,7 +25,7 @@
     line-height: 12px;
     margin-bottom: 5px;
 }
-#paay_box #paay_phone {
+.paay-button-box .paay-phone {
     height: 32px;
     padding: 0px 0px 0px 5px;
     border-top: 1px solid #999999;
@@ -45,7 +45,7 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
-#paay_box #paay_button {
+.paay-button-box .paay-button {
     width: 57px;
     background: url("../images/paay/stretchsprite.png") repeat scroll right -80px transparent;
     border: 0 none;
@@ -178,12 +178,18 @@
     margin-right: auto;
 }
 #paay_status_text {
+    padding-top: 10px;
     color: #000000;
-    font-size: 25px;
-    line-height:25px;
+    font-size: 18px;
+    line-height: 35px;
     margin: auto;
     position: relative;
-    width: 400px;
+    width: 480px;
+}
+#paay_hash_tag {
+    margin-top: 10px;
+    font-size: 18px;
+    color: #254e10;
 }
 #paay_overlay #paay_overlay_buttons {
     bottom: 50px;
@@ -256,6 +262,25 @@ i.icon_resend {
     clear: both;
     display: block;
     padding: 8px 55px 8px 0;
+}
+
+.paay_button {
+    margin: 12px 20px;
+    width: 125px;
+    display: inline-block;
+    background: url("../images/paay/btn.png") repeat scroll 0 0px transparent;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    height: 36px;
+    line-height: 36px;
+    text-shadow: 0 -1px 0 #666666;
+}
+
+.paay_button:hover {
+    text-decoration: none;
+    color: #FFFFFF;
 }
 
 .paay-box { border: 2px solid #3e7925; color: #3e7925; background-color: #ffffff; border-radius: 5px; padding: 3% 5%; }

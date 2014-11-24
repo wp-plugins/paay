@@ -29,7 +29,7 @@ class Paay_ApiClient
      *
      * @param string $phoneNumber
      */
-    public function addTransaction($phoneNumber, $callbackName, $wcCart, $wcShipping, $orderId = null)
+    public function addTransaction($phoneNumber, $wcShipping, $orderId = null)
     {
         $addressId = '';
         $customer = $this->getCustomerByPhone($phoneNumber);
@@ -50,7 +50,7 @@ class Paay_ApiClient
         $thanksUrl .= '&order=' . $orderId . '&key=' . $order->order_key;
         $cartItems = array();
 
-        foreach($order->get_items() as $item) {
+        foreach ($order->get_items() as $item) {
             $product = get_product($item['product_id']);
 
             $cartItems[] = array(
@@ -64,9 +64,9 @@ class Paay_ApiClient
         $customer->Address[] = $customer->Address[0];
 
         $this->wc->findShippingTaxForState('NY');
-        foreach($customer->Address as $address) {
-            foreach($wcShipping->load_shipping_methods() as $shipping) {
-                if($shipping->enabled == 'no') {
+        foreach ($customer->Address as $address) {
+            foreach ($wcShipping->load_shipping_methods() as $shipping) {
+                if ($shipping->enabled == 'no') {
                     continue;
                 }
                 $order->order_shipping = $shipping->id;
@@ -133,7 +133,7 @@ class Paay_ApiClient
             throw new Paay_Exception_ApiException('You must provide order number');
         }
 
-        $order = new WC_Order($order_id);
+        // $order = new WC_Order($orderId);
         $transactionId = get_post_meta($orderId, 'transaction_id', true);
 
         if (empty($transactionId)) {
@@ -180,8 +180,7 @@ class Paay_ApiClient
         $request->resource = 'customers.json';
         if ($paramName == 'id') {
             $request->resource = 'customers/'.$paramValue.'.json';
-        }
-        else {
+        } else {
             $getData[$paramName] = $paramValue;
         }
 
@@ -194,9 +193,8 @@ class Paay_ApiClient
 
         $result = json_decode($response->body);
 
-        if (isset($result->response) && isset($result->response->message) && !is_object($result->response->data) ) {
-            throw new Paay_Exception_ApiException($result->response->message.': '
-                .(string)$result->response->data);
+        if (isset($result->response) && isset($result->response->message) && !is_object($result->response->data)) {
+            throw new Paay_Exception_ApiException($result->response->message.': '.(string)$result->response->data);
         }
 
         return ($paramName == 'id') ? $result->response->data : $result->customers[0];

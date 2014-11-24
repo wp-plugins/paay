@@ -37,8 +37,7 @@ wp_enqueue_script('paay', plugins_url('/js/paay.js', __FILE__), array(), false, 
 
 function paay_gateway_admin_css()
 {
-    global $user_level;
-$style = <<< EOT
+    $style = <<< EOT
 <style type="text/css">
 /*<![CDATA[*/
 
@@ -80,8 +79,8 @@ $style = <<< EOT
         </style>
 EOT;
 
-        echo $style;
-    }
+    echo $style;
+}
 
 function add_paay_gateway_class($methods)
 {
@@ -92,14 +91,14 @@ function add_paay_gateway_class($methods)
 
 function init_paay_gateway_class()
 {
-    if(!class_exists('Paay_Gateway')) {
+    if (!class_exists('Paay_Gateway')) {
         require dirname(__FILE__).'/lib/Paay/Gateway.php';
     }
 }
 
 function paay_plugin_menu()
 {
-    add_options_page( 'PAAY', 'PAAY', 'manage_options', 'paay_options', 'paay_options_page' );
+    add_options_page('PAAY', 'PAAY', 'manage_options', 'paay_options', 'paay_options_page');
 }
 
 function register_paay_settings()
@@ -141,191 +140,202 @@ function paay_options_page()
     <?php
 }
 
-function paay_checkout()
-{
-    ?>
-    <div id="paay_box">
-    <div class="paay_input">
-        <div class="paay_text"><?php echo __('Checkout with Paay'); ?></div>
-        <input type="text" placeholder="<?php echo __('Mobile number'); ?>" id="paay_phone"/>
-        <button type="button" id="paay_button"><?php echo __('Paay'); ?></button>
-    </div>
-    <div id="paay_overlay" class="no-display">
-    <div class="paay_background"></div>
-    <div id="paay_status_window">
-        <div id="paay_overlay_close_button" class="close_button"></div>
-        <div class="paay_logo"></div>
-        <div class="white_text dark_shadow_text"><?php echo __('Thank you for choosing Paay.'); ?></div>
-        <div id="paay_status_area" class="paay_status_area">
-            <span class="right"></span>
-            <span class="left"></span>
-            <div id="paay_status_bar">
-                <span class="right"></span>
-                <span class="left"></span>
-                <div id="paay_progress"><span class="right"></span><span class="left"></span></div>
-            </div>
-            <div id="paay_processing_status" class="green_text light_shadow_text"><?php echo __('Waiting for mobile confirmation'); ?></div>
-        </div>
-        <div id="paay_status_text"><?php echo __('Please check your phone now to approve this payment.'); ?></div>
-        <div id="paay_overlay_buttons">
-            <button id="paay_cancel_button" type="button" class="green_text"><?php echo __('Cancel'); ?></button>
-            <button id="paay_resend_button" type="button">
-                <span class="right"></span>
-                <span class="left"></span>
-                <i class="icon_resend"></i>
-                <?php echo __('Resend Alert'); ?>
-            </button>
-            <button id="paay_help_button" type="button"><?php echo __('Help'); ?></button>
-        </div>
-        <div class="paay_refresh_notice green_text"><?php echo __('This screen will automatically refresh when payment is confirmed.'); ?></div>
-    </div>
-</div></div>
-<?php
-}
-
-function paay_handler()
-{
-    if (!isset($_GET['page']) || ('paay_handler' !== $_GET['page'])) {
-        return;
+    function paay_checkout()
+    {
+        $html = array();
+        $html[] = '<div class="paay-button-placeholder"></div>';
+        $html[] = '<script type="text/javascript">
+                    var PAAY = PAAY || {};
+                    PAAY.config = PAAY.config || {};
+                    PAAY.config.url = PAAY.config.url || {};
+                    if (undefined === PAAY.config.woocommerce) {
+                        PAAY.config.url.createTransaction = \'/?page=paay_handler&paay-module=createTransaction\';
+                        PAAY.config.url.awaitingApproval = \'/?page=paay_handler&paay-module=awaitingApproval\';
+                        PAAY.config.woocommerce = true;
+                    }
+                    </script>';
+        echo join('', $html);
     }
 
-    global $wp, $wp_query, $wp_the_query, $wp_rewrite, $wp_did_header, $woocommerce;
+    function paay_wc()
+    {
+        static $paay_wc = null;
 
-    $wc = new Paay_WooCommerce($woocommerce);
+        if (null === $paay_wc) {
+            global $woocommerce;
+            $paay_wc = new Paay_WooCommerce($woocommerce);
+        }
 
-    $phoneNumber = $_GET['telephone'];
-    $callbackName = $_GET['cb_name'];
-
-    if (empty($callbackName)) {
-        throw new InvalidArgumentException('"cb_name" parameter must be provided');
+        return $paay_wc;
     }
 
-    $response = '';
+    function paay_api()
+    {
+        static $api = null;
 
-    try {
-        $apiClient = new Paay_ApiClient(get_option('paay_host'), get_option('paay_key'), get_option('paay_secret'), $wc);
+        if (null === $api) {
+            $api = new Paay_ApiClient(
+                get_option('paay_host'),
+                get_option('paay_key'),
+                get_option('paay_secret'),
+                paay_wc()
+            );
+        }
 
-        if (empty($phoneNumber)) {
-            $orderId = $_GET['order_id'];
-            $result = $apiClient->checkTransactionStatus($orderId);
+        return $api;
+    }
+
+    function paay_createTransactionHandler()
+    {
+        $result = paay_api()->addTransaction($_GET['telephone'], paay_wc()->getShipping(), null);
+        $response = 'PAAY.api.createTransactionCallback('.$result.')';
+
+        return $response;
+    }
+
+    function paay_awaitingApprovalHandler()
+    {
+        $result = paay_api()->checkTransactionStatus($_GET['order_id']);
+        $r = json_decode($result);
+        if (
+            !isset($r->response->data->Transaction->state) ||
+            !isset($r->response->data->Transaction->signature) ||
+            !isset($r->response->data->Transaction->return_url)
+        ) {
+            $response = array('error' => true);
         } else {
-            //if order_id is null - new order is created, otherwise, we're using existing order.
-            $orderId = (isset($_GET['order_id'])) ? trim($_GET['order_id']) : null;
-            $result = $apiClient->addTransaction($phoneNumber, $callbackName, $wc->getCart(), $wc->getShipping(), $orderId);
-        }
-        $response = "paay_app.handle_callback(" . $callbackName .", $result)";
+            $response = array(
+                'order_id'   => $r->response->data->Transaction->signature,
+                'state'      => $r->response->data->Transaction->state,
+                'return_url' => $r->response->data->Transaction->return_url,
+            );
 
-    } catch (Exception $e) {
-        $response = "Error: " . $e->getMessage();
+            // if ('approved' === $response['state']) {
+            //     die('FINALIZE');
+            //     //$this->finalizeOrder($r->response->data);
+            // }
+        }
+
+        return sprintf('PAAY.api.awaitingApprovalCallback(%s)', json_encode($response));
     }
 
-    header('content-type:application/javascript');
-    echo $response;
-    exit;
-}
+    function paay_handler()
+    {
+        $module = trim($_GET['paay-module']);
 
-function paay_template($template, $var = array())
-{
-    ob_start();
-    include dirname(__FILE__).'/templates/'.$template.'.php';
-    $contents = ob_get_clean();
-
-    return $contents;
-}
-
-function paay_box($info, $content = '', $type = 'success')
-{
-    return paay_template('paay_box', array(
-        'type'      => $type,
-        'info'      => $info,
-        'content'   => $content
-    ));
-}
-
-function paay_parse_form($form_html)
-{
-    $data = str_replace("\n", '', $form_html);
-    $data = stripcslashes($data);
-
-    $dom = str_get_html($data);
-    $form = $dom->find('form', 0);
-    $forms = array($form);
-    // $forms = $dom->find('form');
-
-    $forms_html = '';
-    foreach ($forms as $form) {
-        $form->class = '';
-
-        //Remove all noscript tags
-        $noscripts = $form->find('noscript');
-        if (!empty($noscripts)) {
-            foreach ($noscripts as $noscript) {
-                $noscript->outertext = '';
-            }
+        if (!in_array($module, array('createTransaction', 'awaitingApproval'))) {
+            return;
         }
 
-        //Remove existing submits
-        $submits = $form->find('input[type="submit"]');
-        if (!empty($submits)) {
-            foreach ($submits as $submit) {
-                $submit->outertext = '';
-            }
-        }
-
-        //Remove built in form styles
-        //Labels
-        $labels = $form->find('label');
-        $labels_set = array();
-        foreach ($labels as $label) {
-            if (!empty($label->for)) {
-                $label->class = '';
-                $labels_set[$label->for] = $label;
-            }
-        }
-
-        //Inputs
-        $inputs = $form->find('input[type!="submit"], select, textarea');
-        $inputs_set = array();
-        foreach ($inputs as $input) {
-            $input->class = '';
-            if (!empty($input->id)) {
-                $inputs_set[$input->id] = $input;
-            } else {
-                $inputs_set['paay-'.uniqid()] = $input;
-            }
-        }
-
-        //Connect labels with inputs
-        $inputs_html = '<ul>';
-        //labelled inputs
-        foreach ($labels_set as $key => $label) {
-            if (isset($inputs_set[$key])) {
-                $inputs_html .= '<li>'.$label->__toString().$inputs_set[$key]->__toString().'</li>';
-                unset($inputs_set[$key]);
-            }
-        }
-        //inputs without labels
-        foreach ($inputs_set as $key => $input) {
-            $inputs_html .= '<li>'.$input->__toString().'</li>';
-        }
-        $inputs_html .= '</ul>';
-        $form->innertext = $inputs_html;
-
-        //Add PAAY submit
-        $form->innertext = $form->innertext.'<input type="submit" value="Proceed to PAAY" />';
-
-        $forms_html .= $form->__toString();
+        $module = 'paay_'.$module.'Handler';
+        $response = $module();
+        header('content-type:application/javascript');
+        echo $response;
+        exit;
     }
 
-    $info = 'Every PAAY transaction goes straight to your phone where you can verify and confirm or cancel the order. The only information the merchant sees is the transaction, not your credit card numbers.';
+    function paay_template($template, $var = array())
+    {
+        ob_start();
+        include dirname(__FILE__).'/templates/'.$template.'.php';
+        $contents = ob_get_clean();
 
-    return paay_box($info, $forms_html);
-}
+        return $contents;
+    }
 
-function paay_parse_error($response)
-{
-    $message = (isset($response['response']['data']) && !empty($response['response']['data'])) ? $response['response']['data'] : 'Transaction processing failed';
-    $fid = (isset($response['response']['fid']) && !empty($response['response']['fid'])) ? $response['response']['fid'] : '';
+    function paay_box($info, $content = '', $type = 'success')
+    {
+        return paay_template('paay_box', array(
+            'type'      => $type,
+            'info'      => $info,
+            'content'   => $content
+        ));
+    }
 
-    return paay_box($message.' If it\'s still not working, please contact PAAY and provide this number: '.$fid, '', 'error');
-}
+    function paay_parse_form($form_html)
+    {
+        $data = str_replace("\n", '', $form_html);
+        $data = stripcslashes($data);
+
+        $dom = str_get_html($data);
+        $form = $dom->find('form', 0);
+        $forms = array($form);
+        // $forms = $dom->find('form');
+
+        $forms_html = '';
+        foreach ($forms as $form) {
+            $form->class = '';
+
+            //Remove all noscript tags
+            $noscripts = $form->find('noscript');
+            if (!empty($noscripts)) {
+                foreach ($noscripts as $noscript) {
+                    $noscript->outertext = '';
+                }
+            }
+
+            //Remove existing submits
+            $submits = $form->find('input[type="submit"]');
+            if (!empty($submits)) {
+                foreach ($submits as $submit) {
+                    $submit->outertext = '';
+                }
+            }
+
+            //Remove built in form styles
+            //Labels
+            $labels = $form->find('label');
+            $labels_set = array();
+            foreach ($labels as $label) {
+                if (!empty($label->for)) {
+                    $label->class = '';
+                    $labels_set[$label->for] = $label;
+                }
+            }
+
+            //Inputs
+            $inputs = $form->find('input[type!="submit"], select, textarea');
+            $inputs_set = array();
+            foreach ($inputs as $input) {
+                $input->class = '';
+                if (!empty($input->id)) {
+                    $inputs_set[$input->id] = $input;
+                } else {
+                    $inputs_set['paay-'.uniqid()] = $input;
+                }
+            }
+
+            //Connect labels with inputs
+            $inputs_html = '<ul>';
+            //labelled inputs
+            foreach ($labels_set as $key => $label) {
+                if (isset($inputs_set[$key])) {
+                    $inputs_html .= '<li>'.$label->__toString().$inputs_set[$key]->__toString().'</li>';
+                    unset($inputs_set[$key]);
+                }
+            }
+            //inputs without labels
+            foreach ($inputs_set as $key => $input) {
+                $inputs_html .= '<li>'.$input->__toString().'</li>';
+            }
+            $inputs_html .= '</ul>';
+            $form->innertext = $inputs_html;
+
+            //Add PAAY submit
+            $form->innertext = $form->innertext.'<input type="submit" value="Proceed to PAAY" />';
+
+            $forms_html .= $form->__toString();
+        }
+
+        $info = 'Every PAAY transaction goes straight to your phone where you can verify and confirm or cancel the order. The only information the merchant sees is the transaction, not your credit card numbers.';
+
+        return paay_box($info, $forms_html);
+    }
+
+    function paay_parse_error($response)
+    {
+        $message = (isset($response['response']['data']) && !empty($response['response']['data'])) ? $response['response']['data'] : 'Transaction processing failed';
+        $fid = (isset($response['response']['fid']) && !empty($response['response']['fid'])) ? $response['response']['fid'] : '';
+
+        return paay_box($message.' If it\'s still not working, please contact PAAY and provide this number: '.$fid, '', 'error');
+    }

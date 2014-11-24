@@ -119,6 +119,8 @@ class Paay_WooCommerce
             $order->shipping = $shipping->cost;
             $order->payment_complete();
 
+            // $this->getCart()->empty_cart(); //XXX: WooCommerce won't let you go to "Order Status Page" unless you have something in Cart...
+
             return;
         }
 
