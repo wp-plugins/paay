@@ -47,7 +47,8 @@ class Paay_ApiClient
 
         $thanksPageId = woocommerce_get_page_id('thanks');
         $thanksUrl = get_permalink($thanksPageId);
-        $thanksUrl .= '&order=' . $orderId . '&key=' . $order->order_key;
+        $prefix = (false === strpos($thanksUrl, '?')) ? '?' : '&';
+        $thanksUrl .= $prefix.'order=' . $orderId . '&key=' . $order->order_key;
         $cartItems = array();
 
         foreach ($order->get_items() as $item) {
@@ -56,7 +57,7 @@ class Paay_ApiClient
             $cartItems[] = array(
                 'description' => $product->get_title(),
                 'quantity' => $item['qty'],
-                'unit_price' => round(($product->get_price() / $item['qty']), 2),
+                'unit_price' => round($product->get_price(), 2),
             );
         }
 
