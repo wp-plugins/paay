@@ -18,7 +18,7 @@ PAAY.pooling;
 //Templates
 PAAY.templates = PAAY.templates || {
     button: '<div class="paay-button-box"><div class="paay-input"><div class="paay-text">Checkout with PAAY</div><input type="text" placeholder="Mobile number" class="paay-phone"><button type="button" class="paay-button">PAAY</button></div><span class="paay-or">-OR-</span></div>',
-    overlay: '<div id="paay_overlay"><div class="paay_background"></div><div id="paay_status_window"><div id="paay_overlay_close_button" class="close_button"></div><div class="paay_logo"></div><div class="white_text dark_shadow_text">Thank you for choosing PAAY.</div><div class="paay_status_area"><span class="right"></span><span class="left"></span><div id="paay_status_bar"><span class="right"></span><span class="left"></span><div id="paay_progress" style="width: 15%;"><span class="right"></span><span class="left"></span></div></div><div id="paay_processing_status" class="green_text light_shadow_text">Sending confirmation.</div></div><div id="paay_status_text">We are now sending you your confirmation request.</div><div id="paay_hash_tag"></div><div id="paay_help_buttons"><a id="paay_button_paay_website" target="_new" class="paay_button" href=""></a><a id="paay_button_how_to_paay" target="_new" class="paay_button" href=""></a></div><div id="paay_overlay_buttons"><button id="paay_cancel_button" type="button" class="green_text">Cancel</button><button id="paay_resend_button" type="button" style="display: none;"><span class="right"></span><span class="left"></span><i class="icon_resend"></i>Resend Alert</button><button id="paay_help_button" type="button">Help</button></div><div class="paay_refresh_notice green_text">This screen will automatically refresh when payment is confirmed.</div></div></div>'
+    overlay: '<div id="paay_overlay"><div class="paay_background"></div><div id="paay_status_window"><div id="paay_overlay_close_button" class="paay-close_button"></div><div class="paay_logo"></div><div class="paay-white_text paay-dark_shadow_text">Thank you for choosing PAAY.</div><div class="paay_status_area"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_status_bar"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_progress" style="width: 15%;"><span class="paay-right"></span><span class="paay-left"></span></div></div><div id="paay_processing_status" class="paay-green_text light_shadow_text">Sending confirmation.</div></div><div id="paay_status_text">We are now sending you your confirmation request.</div><div id="paay_hash_tag"></div><div id="paay_help_buttons"><a id="paay_button_paay_website" target="_new" class="paay_button" href=""></a><a id="paay_button_how_to_paay" target="_new" class="paay_button" href=""></a><a id="paay_button_paay_webapp" target="_new" class="paay_button" href=""></a></div><div id="paay_overlay_buttons"><button id="paay_cancel_button" type="button" class="paay-green_text">Cancel</button><a id="paay_resend_button" style="display: none;" class="paay_button"><i class="paay-icon_resend"></i>Resend Alert</a><a class="paay_button" href="http://webapp.paay.co">Web APP</a><button id="paay_help_button" type="button">Help</button></div><div class="paay_refresh_notice paay-green_text">This screen will automatically refresh when payment is confirmed.</div></div></div>'
 };
 
 PAAY.template = function(template, params) {
@@ -128,7 +128,7 @@ PAAY.Overlay = function(state) {
         this.el().find('#paay_progress').show();
         this.el().find('#paay_cancel_button').show();
         this.el().find('.paay_status_area').show();
-        this.el().find('#paay_progress').attr('style', 'width: 15%');
+        this.el().find('#paay_progress').attr('style', 'width: 15% !important');
         this.el().find('#paay_processing_status').html('Sending confirmation.');
         this.el().find('#paay_status_text').html('We are now sending you your confirmation request.');
         this.el().show();
@@ -143,9 +143,9 @@ PAAY.Overlay = function(state) {
 
         this.el().find('#paay_overlay_buttons').show();
         this.el().find('#paay_resend_button').show();
-        this.el().find('#paay_progress').attr('style', 'width: 50%');
+        this.el().find('#paay_progress').attr('style', 'width: 50% !important');
         this.el().find('#paay_processing_status').html('Awaiting approval.');
-        this.el().find('#paay_status_text').html('Please check your phone now to approve this payment.');
+        this.el().find('#paay_status_text').html('Please check your phone now to approve this payment or use our Web APP');
         this.el().show();
     };
     this.approved = function() {
@@ -156,7 +156,7 @@ PAAY.Overlay = function(state) {
         this.el().find('#paay_help_buttons').hide();
         this.el().find('#paay_hash_tag').hide();
         this.el().find('#paay_resend_button').hide();
-        this.el().find('#paay_progress').attr('style', 'width: 100%');
+        this.el().find('#paay_progress').attr('style', 'width: 100% !important');
         this.el().find('#paay_processing_status').html('Transaction approved.');
         this.el().find('#paay_status_text').html('Approved!<br />Thanks for using PAAY.');
         this.el().show();
@@ -191,6 +191,7 @@ PAAY.Overlay = function(state) {
         this.el().find('#paay_hash_tag').text('#PAAYBetter with Team PAAY').show();
         this.el().find('#paay_button_paay_website').attr('href', 'https://www.paay.co/').text('PAAY website');
         this.el().find('#paay_button_how_to_paay').attr('href', 'https://www.youtube.com/watch?v=9UaYLfYVbQQ').text('How to PAAY');
+        this.el().find('#paay_button_paay_webapp').attr('href', 'http://webapp.paay.co/').text('WebAPP');
         this.el().find('#paay_help_buttons').show();
     };
 };
