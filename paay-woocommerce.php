@@ -151,6 +151,7 @@ function paay_options_page()
                     if (undefined === PAAY.config.woocommerce) {
                         PAAY.config.url.createTransaction = \'/?page=paay_handler&paay-module=createTransaction\';
                         PAAY.config.url.awaitingApproval = \'/?page=paay_handler&paay-module=awaitingApproval\';
+                        PAAY.config.url.sendWebAppLink = \'/?page=paay_handler&paay-module=sendWebAppLink\';
                         PAAY.config.woocommerce = true;
                     }
                     </script>';
@@ -219,11 +220,18 @@ function paay_options_page()
         return sprintf('PAAY.api.awaitingApprovalCallback(%s)', json_encode($response));
     }
 
+    function paay_sendWebAppLinkHandler()
+    {
+        paay_api()->sendWebAppLink($_GET['order_id'], $_GET['telephone']);
+
+        return 'return true;';
+    }
+
     function paay_handler()
     {
         $module = trim($_GET['paay-module']);
 
-        if (!in_array($module, array('createTransaction', 'awaitingApproval'))) {
+        if (!in_array($module, array('createTransaction', 'awaitingApproval', 'sendWebAppLink'))) {
             return;
         }
 

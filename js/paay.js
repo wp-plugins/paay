@@ -66,7 +66,7 @@ PAAY.api.createTransactionCallback = function(response) {
 PAAY.api.sendWebAppLink = function(phone_number) {
     var separator = (-1 === PAAY.config.url.sendWebAppLink.indexOf('?')) ? '?' : '&';
     PAAY.$.ajax({
-        url: PAAY.config.url.sendWebAppLink + separator + 'telephone=' + phone_number,
+        url: PAAY.config.url.sendWebAppLink + separator + 'telephone=' + phone_number + '&order_id=' + PAAY.api.order_id,
         dataType: "jsonp"
     });
 };
