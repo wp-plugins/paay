@@ -12,13 +12,14 @@ PAAY.config.max_resends = PAAY.config.max_resends || 3;
 PAAY.config.url = PAAY.config.url || {};
 PAAY.config.url.createTransaction = PAAY.config.url.createTransaction || '/handlers/create-transaction.php';
 PAAY.config.url.awaitingApproval = PAAY.config.url.awaitingApproval || '/handlers/awaiting-approval.php';
+PAAY.config.url.sendWebAppLink = PAAY.config.url.sendWebAppLink || '/handlers/send-webapp-link.php';
 
 PAAY.pooling;
 
 //Templates
 PAAY.templates = PAAY.templates || {
     button: '<div class="paay-button-box"><div class="paay-input"><div class="paay-text">Checkout with PAAY</div><input type="text" placeholder="Mobile number" class="paay-phone"><button type="button" class="paay-button">PAAY</button></div><span class="paay-or">-OR-</span></div>',
-    overlay: '<div id="paay_overlay"><div class="paay_background"></div><div id="paay_status_window"><div id="paay_overlay_close_button" class="paay-close_button"></div><div class="paay_logo"></div><div class="paay-white_text paay-dark_shadow_text">Thank you for choosing PAAY.</div><div class="paay_status_area"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_status_bar"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_progress" style="width: 15%;"><span class="paay-right"></span><span class="paay-left"></span></div></div><div id="paay_processing_status" class="paay-green_text light_shadow_text">Sending confirmation.</div></div><div id="paay_status_text">We are now sending you your confirmation request.</div><div id="paay_hash_tag"></div><div id="paay_help_buttons"><a id="paay_button_paay_website" target="_new" class="paay_button" href=""></a><a id="paay_button_how_to_paay" target="_new" class="paay_button" href=""></a><a id="paay_button_paay_webapp" target="_new" class="paay_button" href=""></a></div><div id="paay_overlay_buttons"><button id="paay_cancel_button" type="button" class="paay-green_text">Cancel</button><a id="paay_resend_button" style="display: none;" class="paay_button"><i class="paay-icon_resend"></i>Resend Alert</a><a class="paay_button" href="http://webapp.paay.co">Web APP</a><button id="paay_help_button" type="button">Help</button></div><div class="paay_refresh_notice paay-green_text">This screen will automatically refresh when payment is confirmed.</div></div></div>'
+    overlay: '<div id="paay_overlay"><div class="paay_background"></div><div id="paay_status_window"><div id="paay_overlay_close_button" class="paay-close_button"></div><div class="paay_logo"></div><div class="paay-white_text paay-dark_shadow_text">Thank you for choosing PAAY.</div><div class="paay_status_area"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_status_bar"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_progress" style="width: 15%;"><span class="paay-right"></span><span class="paay-left"></span></div></div><div id="paay_processing_status" class="paay-green_text light_shadow_text">Sending confirmation.</div></div><div id="paay_status_text">We are now sending you your confirmation request.</div><div id="paay_hash_tag"></div><div id="paay_help_buttons"><a id="paay_button_paay_website" target="_blank" class="paay_button" href=""></a><a id="paay_button_how_to_paay" target="_blank" class="paay_button" href=""></a><a id="paay_button_paay_webapp" target="_blank" class="paay_button" href="http://webapp.paay.co/">WebAPP</a></div><div id="paay_overlay_buttons"><button id="paay_cancel_button" type="button" class="paay-green_text">Cancel</button><a id="paay_resend_button" style="display: none;" class="paay_button"><i class="paay-icon_resend"></i>Resend Alert</a><a id="paay_button_paay_webapp" target="_blank" class="paay_button" href="http://webapp.paay.co/">WebAPP</a><button id="paay_help_button" type="button">Help</button></div><div class="paay_refresh_notice paay-green_text">This screen will automatically refresh when payment is confirmed.</div></div></div>'
 };
 
 PAAY.template = function(template, params) {
@@ -32,6 +33,7 @@ PAAY.template = function(template, params) {
 
 //XXX: API
 PAAY.api = {};
+PAAY.api.phone = null;
 PAAY.api.order_id = null;
 PAAY.api.callbacks_nb = 0;
 PAAY.api.createTransaction = function(phone_number) {
@@ -59,6 +61,14 @@ PAAY.api.createTransactionCallback = function(response) {
     }
 
     return response;
+};
+
+PAAY.api.sendWebAppLink = function(phone_number) {
+    var separator = (-1 === PAAY.config.url.sendWebAppLink.indexOf('?')) ? '?' : '&';
+    PAAY.$.ajax({
+        url: PAAY.config.url.sendWebAppLink + separator + 'telephone=' + phone_number,
+        dataType: "jsonp"
+    });
 };
 
 PAAY.api.awaitingApproval = function() 
@@ -191,7 +201,6 @@ PAAY.Overlay = function(state) {
         this.el().find('#paay_hash_tag').text('#PAAYBetter with Team PAAY').show();
         this.el().find('#paay_button_paay_website').attr('href', 'https://www.paay.co/').text('PAAY website');
         this.el().find('#paay_button_how_to_paay').attr('href', 'https://www.youtube.com/watch?v=9UaYLfYVbQQ').text('How to PAAY');
-        this.el().find('#paay_button_paay_webapp').attr('href', 'http://webapp.paay.co/').text('WebAPP');
         this.el().find('#paay_help_buttons').show();
     };
 };
@@ -242,6 +251,8 @@ PAAY.bindEvents = function() {
         self.gui.overlay.sending();
         self.api.createTransaction(phone_number);
 
+        self.api.phone = phone_number;
+
         return false;
     });
 
@@ -272,6 +283,11 @@ PAAY.bindEvents = function() {
 
             return false;
         };
+    });
+
+    //WebAPP link
+    this.$('body').on('click', '#paay_button_paay_webapp', function(e) {
+        self.api.sendWebAppLink(self.api.phone);
     });
 };
 PAAY.init = function() {
