@@ -244,6 +244,7 @@ i.paay-icon_resend {
 }
 
 .paay_button {
+    box-sizing: border-box !important;
     margin: 12px 20px !important;
     width: 125px !important;
     display: inline-block;
