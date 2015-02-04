@@ -2,9 +2,10 @@
     height: 90px !important;
     padding-top: 10px !important;
     clear: both !important;
-    overflow: hidden !important;
+    /*overflow: hidden !important;*/
 }
 .paay-button-box .paay-input {
+    position: relative !important;
     text-align: right !important;
     width: 160px !important;
     border-radius: 5px !important;
@@ -17,9 +18,43 @@
     -moz-box-sizing: content-box !important;
     box-sizing: content-box !important;
 }
+
+.paay-button-box .paay-input .paay-hint {
+    display: inline-block !important;
+}
+.paay-button-box .paay-input .paay-hint .paay-icon-question:before {
+    content: "i" !important;
+    display: inline-block;
+    color: #ffffff !important;
+    background: #699A4F !important;
+    cursor: pointer !important;
+    width: 14px !important;
+    height: 14px !important;
+    font-size: 14px !important;
+    text-align: center;
+    line-height: 14px !important;
+    border-radius: 10px;
+    margin: 0px 0px 0px 5px!important;
+}
+.paay-button-box .paay-input .paay-hint .paay-hint-text {
+    position: absolute !important;
+    top: -20px !important;
+    left: -50% !important;
+    background: #ffffff !important;
+    border: 1px solid #699A4F !important;
+    border-radius: 5px;
+    text-align: left;
+    font-size: 12px;
+    padding: 5px !important;
+    display: none !important;
+}
+.paay-button-box .paay-input .paay-hint:hover .paay-hint-text {
+    display: block !important;
+}
+
 .paay-button-box .paay-text {
     color: #699A4F !important;
-    display: block;
+    display: inline-block;
     font-size: 12px !important;
     height: 12px !important;
     line-height: 12px !important;

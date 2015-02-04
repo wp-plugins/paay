@@ -17,10 +17,34 @@ PAAY.config.url.sendWebAppLink = PAAY.config.url.sendWebAppLink || '/handlers/se
 PAAY.pooling;
 
 //Templates
-PAAY.templates = PAAY.templates || {
-    button: '<div class="paay-button-box"><div class="paay-input"><div class="paay-text">Checkout with PAAY</div><input type="text" placeholder="Mobile number" class="paay-phone"><button type="button" class="paay-button">PAAY</button></div><span class="paay-or">-OR-</span></div>',
-    overlay: '<div id="paay_overlay"><div class="paay_background"></div><div id="paay_status_window"><div id="paay_overlay_close_button" class="paay-close_button"></div><div class="paay_logo"></div><div class="paay-white_text paay-dark_shadow_text">Thank you for choosing PAAY.</div><div class="paay_status_area"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_status_bar"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_progress" style="width: 15%;"><span class="paay-right"></span><span class="paay-left"></span></div></div><div id="paay_processing_status" class="paay-green_text light_shadow_text">Sending confirmation.</div></div><div id="paay_status_text">We are now sending you your confirmation request.</div><div id="paay_hash_tag"></div><div id="paay_help_buttons"><a id="paay_button_paay_website" target="_blank" class="paay_button" href=""></a><a id="paay_button_how_to_paay" target="_blank" class="paay_button" href=""></a><a id="paay_button_paay_webapp" target="_blank" class="paay_button" href="http://webapp.paay.co/">WebAPP</a></div><div id="paay_overlay_buttons"><button id="paay_cancel_button" type="button" class="paay-green_text">Cancel</button><a id="paay_resend_button" style="display: none;" class="paay_button"><i class="paay-icon_resend"></i>Resend Alert</a><a id="paay_button_paay_webapp" target="_blank" class="paay_button" href="http://webapp.paay.co/">WebAPP</a><button id="paay_help_button" type="button">Help</button></div><div class="paay_refresh_notice paay-green_text">This screen will automatically refresh when payment is confirmed.</div></div></div>'
-};
+if (PAAY.templates) {
+    PAAY.templates = PAAY.templates;
+} else {
+    PAAY.templates = {};
+    //PAAY BUTTON
+    PAAY.templates.button_paay_or = '<span class="paay-or">-OR-</span>';
+    PAAY.templates.button_paay_phone = '<input type="text" placeholder="Mobile number" class="paay-phone">';
+    PAAY.templates.button_paay_button = '<button type="button" class="paay-button">PAAY</button>'
+    PAAY.templates.button_paay_text = '<div class="paay-text">Checkout with PAAY</div>';
+    PAAY.templates.button_paay_hint = '<div class="paay-hint"><i class="paay-icon-question"></i><div class="paay-hint-text">' +
+        'Safe, fast & incredibly simple mobile payments. <a target="_blank" href="http://www.youtube.com/embed/8nEJJ6Lp76c?feature=player_detailpage">Watch Video</a>'
+    + '</div></div>';
+    PAAY.templates.button_paay_input =
+    '<div class="paay-input">' +
+        PAAY.templates.button_paay_text +
+        PAAY.templates.button_paay_hint +
+        PAAY.templates.button_paay_phone +
+        PAAY.templates.button_paay_button +
+    '</div>';
+    PAAY.templates.button =
+    '<div class="paay-button-box">' +
+        PAAY.templates.button_paay_input +
+        PAAY.templates.button_paay_or +
+    '</div>',
+
+    //GREEN BOX
+    PAAY.templates.overlay = '<div id="paay_overlay"><div class="paay_background"></div><div id="paay_status_window"><div id="paay_overlay_close_button" class="paay-close_button"></div><div class="paay_logo"></div><div class="paay-white_text paay-dark_shadow_text">Thank you for choosing PAAY.</div><div class="paay_status_area"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_status_bar"><span class="paay-right"></span><span class="paay-left"></span><div id="paay_progress" style="width: 15%;"><span class="paay-right"></span><span class="paay-left"></span></div></div><div id="paay_processing_status" class="paay-green_text light_shadow_text">Sending confirmation.</div></div><div id="paay_status_text">We are now sending you your confirmation request.</div><div id="paay_hash_tag"></div><div id="paay_help_buttons"><a id="paay_button_paay_website" target="_blank" class="paay_button" href=""></a><a id="paay_button_how_to_paay" target="_blank" class="paay_button" href=""></a><a id="paay_button_paay_webapp" target="_blank" class="paay_button" href="http://webapp.paay.co/">WebAPP</a></div><div id="paay_overlay_buttons"><button id="paay_cancel_button" type="button" class="paay-green_text">Cancel</button><a id="paay_resend_button" style="display: none;" class="paay_button"><i class="paay-icon_resend"></i>Resend Alert</a><a id="paay_button_paay_webapp" target="_blank" class="paay_button" href="http://webapp.paay.co/">WebAPP</a><button id="paay_help_button" type="button">Help</button></div><div class="paay_refresh_notice paay-green_text">This screen will automatically refresh when payment is confirmed.</div></div></div>';
+}
 
 PAAY.template = function(template, params) {
     var t = this.templates[template];
