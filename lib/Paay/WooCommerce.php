@@ -86,6 +86,7 @@ class Paay_WooCommerce
             return;
         }
 
+        $order = new WC_Order($orderId);
         if ('approved' == $transactionData->Transaction->state) {
             $transaction = $transactionData->Transaction;
             $shipping = $transactionData->shippingOption[0];
@@ -96,8 +97,6 @@ class Paay_WooCommerce
                     $address = $addr;
                 }
             }
-
-            $order = new WC_Order($orderId);
 
             if (null !== $address->id) {
                 $address_data = array(
@@ -124,7 +123,7 @@ class Paay_WooCommerce
             return;
         }
 
-        if ('user_declined' == $transaction->state) {
+        if ('user_declined' == $transactionData->Transaction->state) {
             $order->cancel_order('PAAY transaction aborted by customer.');
             return;
         }
