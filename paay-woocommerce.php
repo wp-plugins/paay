@@ -32,8 +32,8 @@ add_action('admin_head', 'paay_gateway_admin_css');
 
 add_action('init', 'paay_handler');
 
-wp_enqueue_style('paay', plugins_url('/css/paay.css', __FILE__));
-wp_enqueue_script('paay', plugins_url('/js/paay.js', __FILE__), array(), false, true);
+wp_enqueue_style('paay', '//plugins.paay.co/css/paay.css');
+wp_enqueue_script('paay', '//plugins.paay.co/js/paay.js', array(), false, true);
 
 function paay_gateway_admin_css()
 {
