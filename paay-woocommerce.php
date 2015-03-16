@@ -188,43 +188,55 @@ function paay_options_page()
 
     function paay_createTransactionHandler()
     {
-        $result = paay_api()->addTransaction($_GET['telephone'], paay_wc()->getShipping(), null);
-        $response = 'PAAY.api.createTransactionCallback('.$result.')';
+        try {
+            $result = paay_api()->addTransaction($_GET['telephone'], paay_wc()->getShipping(), null);
+            $response = 'PAAY.api.createTransactionCallback('.$result.')';
 
-        return $response;
+            return $response;
+        } catch (\Exception $e) {
+            return 'PAAY.api.error("'.$e->getMessage().'")';
+        }
     }
 
     function paay_awaitingApprovalHandler()
     {
-        $result = paay_api()->checkTransactionStatus($_GET['order_id']);
-        $r = json_decode($result);
-        if (
-            !isset($r->response->data->Transaction->state) ||
-            !isset($r->response->data->Transaction->signature) ||
-            !isset($r->response->data->Transaction->return_url)
-        ) {
-            $response = array('error' => true);
-        } else {
-            $response = array(
-                'order_id'   => $r->response->data->Transaction->signature,
-                'state'      => $r->response->data->Transaction->state,
-                'return_url' => $r->response->data->Transaction->return_url,
-            );
+        try {
+            $result = paay_api()->checkTransactionStatus($_GET['order_id']);
+            $r = json_decode($result);
+            if (
+                !isset($r->response->data->Transaction->state) ||
+                !isset($r->response->data->Transaction->signature) ||
+                !isset($r->response->data->Transaction->return_url)
+            ) {
+                $response = array('error' => true);
+            } else {
+                $response = array(
+                    'order_id'   => $r->response->data->Transaction->signature,
+                    'state'      => $r->response->data->Transaction->state,
+                    'return_url' => $r->response->data->Transaction->return_url,
+                );
 
-            // if ('approved' === $response['state']) {
-            //     die('FINALIZE');
-            //     //$this->finalizeOrder($r->response->data);
-            // }
+                // if ('approved' === $response['state']) {
+                //     die('FINALIZE');
+                //     //$this->finalizeOrder($r->response->data);
+                // }
+            }
+
+            return sprintf('PAAY.api.awaitingApprovalCallback(%s)', json_encode($response));
+        } catch (\Exception $e) {
+            return 'PAAY.api.error("'.$e->getMessage().'")';
         }
-
-        return sprintf('PAAY.api.awaitingApprovalCallback(%s)', json_encode($response));
     }
 
     function paay_sendWebAppLinkHandler()
     {
-        paay_api()->sendWebAppLink($_GET['order_id'], $_GET['telephone']);
+        try {
+            paay_api()->sendWebAppLink($_GET['order_id'], $_GET['telephone']);
 
-        return 'return true;';
+            return 'return true;';
+        } catch (\Exception $e) {
+            return 'PAAY.api.error("'.$e->getMessage().'")';
+        }
     }
 
     function paay_handler()
