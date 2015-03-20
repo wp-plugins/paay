@@ -22,6 +22,20 @@ class Paay_ApiClient
         $this->wc = $woocommerce;
     }
 
+    private function getShippingCost($shipping)
+    {
+        $cost = 0;
+        if (isset($shipping->cost) && is_numeric($shipping->cost) && $shipping->cost > 0) {
+            $cost = $shipping->cost;
+        }
+
+        if (isset($shipping->cost_per_order) && is_numeric($shipping->cost_per_order) && $shipping->cost_per_order > 0) {
+            $cost = $shipping->cost_per_order;
+        }
+
+        return $cost;
+    }
+
     /**
      * Creates PAAY Transaction - if orderId is null,
      * a new WP_Order is created, otherwise existing WP_Order is being
@@ -31,15 +45,11 @@ class Paay_ApiClient
      */
     public function addTransaction($phoneNumber, $wcShipping, $orderId = null)
     {
-        $addressId = '';
         $customer = $this->getCustomerByPhone($phoneNumber);
         if (empty($customer)) {
             return json_encode(array('response' => array('data' => 'Welcome to PAAY! You will get a text on how to download your wallet.')));
         }
 
-        if (isset($customer->Address[0])) {
-            $addressId = (string)$customer->Address[0]->id;
-        }
         $this->wc->getCart()->calculate_totals();
 
         $orderId = (null === $orderId) ? $this->wc->createOrder($customer) : $orderId;
@@ -62,8 +72,6 @@ class Paay_ApiClient
         }
 
         $shippingMethods = array();
-        $customer->Address[] = $customer->Address[0];
-
         $this->wc->findShippingTaxForState('NY');
         foreach ($customer->Address as $address) {
             foreach ($wcShipping->load_shipping_methods() as $shipping) {
@@ -73,10 +81,10 @@ class Paay_ApiClient
                 $order->order_shipping = $shipping->id;
 
                 $shippingMethods[] = array(
-                    'address_id' => $addressId,
-                    'name' => $shipping->title,
-                    'cost' => intval($shipping->cost),
-                    'tax'  => number_format(intval($shipping->cost) * (1 + floatval($this->wc->findShippingTaxForState($address->state))) / 100, 2)
+                    'address_id' => $address->id,
+                    'name'       => $shipping->title,
+                    'cost'       => $this->getShippingCost($shipping),
+                    'tax'        => number_format((($this->getShippingCost($shipping) * floatval($this->wc->findShippingTaxForState($address->state))) / 100), 2)
                 );
             }
         }
