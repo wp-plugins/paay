@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.1
+Version: 0.2
 Author: PAAY
 Author URI: http://www.paay.co/
 License: GPL2
