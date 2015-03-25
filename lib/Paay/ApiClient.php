@@ -50,7 +50,8 @@ class Paay_ApiClient
             return json_encode(array('response' => array('data' => 'Welcome to PAAY! You will get a text on how to download your wallet.')));
         }
 
-        $this->wc->getCart()->calculate_totals();
+        $cart = $this->wc->getCart();
+        $cart->calculate_totals();
 
         $orderId = (null === $orderId) ? $this->wc->createOrder($customer) : $orderId;
         $order = new WC_Order($orderId);
@@ -69,6 +70,28 @@ class Paay_ApiClient
                 'quantity' => $item['qty'],
                 'unit_price' => round($product->get_price(), 2),
             );
+        }
+
+        // Apply tax for items
+        if ($cart->tax_total > 0) {
+            $cartItems[] = array(
+                'description' => 'Tax Total',
+                'quantity'    => 1,
+                'unit_price'  => $cart->tax_total,
+            );
+        }
+
+        // Apply coupons
+        if (!empty($cart->applied_coupons)) {
+            foreach ($cart->applied_coupons as $coupon) {
+                if (isset($cart->coupon_discount_amounts[$coupon])) {
+                    $cartItems[] = array(
+                        'description' => 'Coupon: '.$coupon,
+                        'quantity'    => 1,
+                        'unit_price'  => (float)('-'.$cart->coupon_discount_amounts[$coupon]),
+                    );
+                }
+            }
         }
 
         $shippingMethods = array();
