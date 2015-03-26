@@ -2,8 +2,9 @@
 Contributors: paay
 Donate link: http://www.paay.co/
 Tags: plugin, woocommerce, shop, gateway, credit card
-Requires at least: 3.5.0
-Tested up to: 3.6
+Requires at least: 3.8
+Depends: WooCommerce
+Tested up to: 4.1
 Stable tag: trunk
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
