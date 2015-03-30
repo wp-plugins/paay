@@ -224,11 +224,6 @@ function paay_options_page()
                     'state'      => $r->response->data->Transaction->state,
                     'return_url' => $r->response->data->Transaction->return_url,
                 );
-
-                // if ('approved' === $response['state']) {
-                //     die('FINALIZE');
-                //     //$this->finalizeOrder($r->response->data);
-                // }
             }
 
             return sprintf('PAAY.api.awaitingApprovalCallback(%s)', json_encode($response));
