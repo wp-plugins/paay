@@ -113,9 +113,17 @@ class Paay_WooCommerce
                 }
             }
 
-            $order->shipping_method_title = $shipping->name;
-            $order->shipping_method = strtolower(str_replace(' ', '_', $shipping->name));
-            $order->shipping = $shipping->cost;
+            $order_total = 0;
+            $order_total += $transactionData->Transaction->shipping_cost;
+            $order_total += $transactionData->Transaction->tax_cost;
+            foreach ($transactionData->TransactionItem as $item) {
+                $order_total += ($item->unit_price * $item->quantity);
+            }
+
+            update_post_meta($order->id, '_'.'shipping_method_title', $shipping->name);
+            update_post_meta($order->id, '_'.'shipping_method', strtolower(str_replace(' ', '_', $shipping->name)));
+            update_post_meta($order->id, '_'.'shipping', $shipping->cost);
+            update_post_meta($order->id, '_'.'order_total', $order_total);
             $order->payment_complete();
 
             // $this->getCart()->empty_cart(); //XXX: WooCommerce won't let you go to "Order Status Page" unless you have something in Cart...
