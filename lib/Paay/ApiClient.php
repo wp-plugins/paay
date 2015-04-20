@@ -18,6 +18,7 @@ class Paay_ApiClient
 
     public function __construct($host, $key, $secret, Paay_Woocommerce $woocommerce)
     {
+        $host = rtrim($host, '/');
         $this->connection = new Paay_Connection($host, $key, $secret);
         $this->wc = $woocommerce;
     }

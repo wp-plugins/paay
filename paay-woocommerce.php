@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.4
+Version: 0.6
 Requires at least: 3.8
 Depends: WooCommerce
 Tested up to: 4.1
@@ -82,8 +82,9 @@ function paay_gateway_admin_css()
     float: left;
     margin-right: 20px;
 }
-
-
+.paay-advanced {
+    display: none;
+}
 /*]]>*/
         </style>
 EOT;
@@ -138,13 +139,30 @@ function paay_options_page()
                     <th scope="row">PAAY secret</th>
                     <td><input type="text" name="paay_secret" value="<?php echo get_option('paay_secret') ?>" /></td>
                 </tr>
-                <tr valign="top">
+
+                <tr>
+                    <td colspan="2">
+                        Advanced <input type="checkbox" id="paay-advanced-toggle" />
+                    </td>
+                </tr>
+                <tr class="paay-advanced" valign="top">
                     <th scope="row">PAAY host</th>
-                    <td><input type="text" name="paay_host" value="<?php echo get_option('paay_host') ?>" /></td>
+                    <td><input type="text" name="paay_host" value="<?php $api_host = get_option('paay_host'); echo (empty($api_host)) ? 'https://api.paay.co' : $api_host; ?>" /></td>
                 </tr>
             </table>
             <?php submit_button() ?>
         </form>
+        <script type="text/javascript">
+            jQuery(document).ready(function() {
+                jQuery('body').on('change', '#paay-advanced-toggle', function(e) {
+                    if (jQuery(this).is(':checked')) {
+                        jQuery('.paay-advanced').show();
+                    } else {
+                        jQuery('.paay-advanced').hide();
+                    }
+                });
+            });
+        </script>
     </div>
     <?php
 }
