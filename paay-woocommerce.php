@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.6
+Version: 0.7
 Requires at least: 3.8
 Depends: WooCommerce
 Tested up to: 4.1
@@ -177,6 +177,7 @@ function paay_options_page()
                     PAAY.config.url = PAAY.config.url || {};
                     if (undefined === PAAY.config.woocommerce) {
                         PAAY.config.url.createTransaction = \'/?page=paay_handler&paay-module=createTransaction\';
+                        PAAY.config.url.cancelTransaction = \'/?page=paay_handler&paay-module=cancelTransaction\';
                         PAAY.config.url.awaitingApproval = \'/?page=paay_handler&paay-module=awaitingApproval\';
                         PAAY.config.url.sendWebAppLink = \'/?page=paay_handler&paay-module=sendWebAppLink\';
                         PAAY.config.woocommerce = true;
@@ -225,6 +226,18 @@ function paay_options_page()
         }
     }
 
+    function paay_cancelTransactionHandler()
+    {
+        try {
+            paay_api()->declineTransaction($_GET['order_id']);
+            $response = 'return true';
+
+            return $response;
+        } catch (\Exception $e) {
+            return 'PAAY.api.error("'.$e->getMessage().'")';
+        }
+    }
+
     function paay_awaitingApprovalHandler()
     {
         try {
@@ -265,7 +278,7 @@ function paay_options_page()
     {
         $module = trim($_GET['paay-module']);
 
-        if (!in_array($module, array('createTransaction', 'awaitingApproval', 'sendWebAppLink'))) {
+        if (!in_array($module, array('createTransaction', 'cancelTransaction', 'awaitingApproval', 'sendWebAppLink'))) {
             return;
         }
 

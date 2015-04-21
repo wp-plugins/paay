@@ -144,6 +144,28 @@ class Paay_ApiClient
         return json_encode($result);
     }
 
+    public function declineTransaction($orderId)
+    {
+        if (empty($orderId)) {
+            throw new Paay_Exception_ApiException('You must provide order number');
+        }
+
+        // $order = new WC_Order($orderId);
+        $transactionId = get_post_meta($orderId, 'transaction_id', true);
+
+        if (empty($transactionId)) {
+            throw new Paay_Exception_ApiException("Transaction id doeasn't exists");
+        }
+
+        $request = new Paay_Connection_Request();
+        $request->resource = 'transactions/decline/'.$transactionId.'.json';
+        $request->body = array();
+
+        $response = $this->connection->sendRequest($request);
+
+        return json_decode($response->body);
+    }
+
     public function addTransactionAsGateway(Paay_Gateway_Order $order)
     {
         $request = new Paay_Connection_Request();
