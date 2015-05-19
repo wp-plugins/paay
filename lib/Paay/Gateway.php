@@ -167,7 +167,7 @@ class Paay_Gateway extends WC_Payment_Gateway
                 $order->update_status('on-hold', __('Awaiting PAAY payment', 'woocommerce'));
                 $order->reduce_order_stock();
 
-                echo paay_parse_form($data);
+                echo paay_parse_form(@$data['extracted_form_html']);
                 exit;
             }
         } else {
