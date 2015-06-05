@@ -90,6 +90,7 @@ class Paay_Gateway extends WC_Payment_Gateway
             $form .= '</p>';
         }
         $form .= '</div>';
+        $form .= '<script type="text/javascript">window.paay_order_redirect = function(order_url) { window.location.href = order_url; }</script>';
 
         echo $form;
     }
@@ -167,7 +168,11 @@ class Paay_Gateway extends WC_Payment_Gateway
                 $order->update_status('on-hold', __('Awaiting PAAY payment', 'woocommerce'));
                 $order->reduce_order_stock();
 
-                echo paay_parse_form(@$data['extracted_form_html']);
+                $dir = get_temp_dir().'/3ds/';
+                @mkdir($dir, 0777, true);
+                file_put_contents($dir.$order_id.'.dat', json_encode($data));
+
+                echo paay_template('3dsframe', array('order_id' => $order_id));
                 exit;
             }
         } else {
