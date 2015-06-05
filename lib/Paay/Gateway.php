@@ -90,7 +90,7 @@ class Paay_Gateway extends WC_Payment_Gateway
             $form .= '</p>';
         }
         $form .= '</div>';
-        $form .= '<script type="text/javascript">window.paay_order_redirect = function(order_url) { window.location.href = order_url; }</script>';
+        $form .= '<script type="text/javascript">window.paay_order_redirect = function(order_url) { window.location.href = order_url.replace(/^http[s]?:/, \'\'); }</script>';
 
         echo $form;
     }
