@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.10
+Version: 0.11
 Requires at least: 3.8
 Depends: WooCommerce
 Tested up to: 4.1
@@ -47,9 +47,16 @@ wp_enqueue_script('paay', '//plugins.paay.co/js/paay.js', array(), false, true);
 
 add_action('woocommerce_thankyou', 'paay_foo');
 
+function isSecure() {
+  return
+    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || $_SERVER['SERVER_PORT'] == 443;
+}
+
 function paay_foo($order_id)
 {
-    echo '<script type="text/javascript">if (typeof(window.parent.paay_order_redirect) == \'function\') {window.parent.paay_order_redirect(window.location.href);}</script>';
+    $prefix = isSecure() ? 'https:' : 'http:';
+    echo '<script type="text/javascript">if (typeof(window.parent.paay_order_redirect) == \'function\') {window.parent.paay_order_redirect(window.location.href.replace(/^http[s]?:/, \''.$prefix.'\'));}</script>';
 }
 
 function paay_3ds_form()
