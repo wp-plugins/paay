@@ -50,7 +50,7 @@ class Paay_Gateway_Order
         $home_url = add_query_arg('wc-api', 'Paay_Gateway', $home_url);
         $home_url = add_query_arg('order_id', $order->id, $home_url);
 
-        $this->transaction['return_url'] = str_replace('https:', 'http:', $home_url);
+        $this->transaction['return_url'] = $home_url;
 
         //Credit card
         $this->transaction['CreditCard']['number'] = $post['paay_pan'];
