@@ -1,1 +1,1 @@
-<iframe src="/?paay-module=paay-3ds-form&order=<?php echo $var['order_id']; ?>" frameborder="0" width="100%"></iframe>
+<iframe class="paay-3ds-iframe" style="display: none;" src="/?paay-module=paay-3ds-form&order=<?php echo $var['order_id']; ?>" frameborder="0" width="100%" onload="window.PAAYHandleIframes();"></iframe>
