@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.13
+Version: 0.14
 Requires at least: 3.8
 Depends: WooCommerce
 Tested up to: 4.1
@@ -66,6 +66,12 @@ function paay_3ds_form()
     }
     $data = file_get_contents(get_temp_dir().'/3ds/'.$_GET['order'].'.dat');
     $data = json_decode($data, true);
+    $is_visible = get_option('paay_3ds_strategy');
+    if ('always' === $is_visible) {
+        $data['is_form_visible'] = true;
+    } elseif ('never' === $is_visible) {
+        $data['is_form_visible'] = false;
+    }
 
     echo paay_template('3dsautosubmit', $data);
     exit;
@@ -143,6 +149,7 @@ function register_paay_settings()
     register_setting('paay', 'paay_key');
     register_setting('paay', 'paay_secret');
     register_setting('paay', 'paay_host');
+    register_setting('paay', 'paay_3ds_strategy');
 }
 
 function paay_options_page()
@@ -150,6 +157,20 @@ function paay_options_page()
     if (!current_user_can( 'manage_options' )) {
         wp_die(__( 'You do not have sufficient permissions to access this page.' ));
     }
+    $strategies = array(
+        'always' => array(
+            'label' => 'Always show 3DS',
+            'help'  => 'Displays 3DS form if 3DS card has been detected. Works like normal 3DS.',
+        ),
+        'detected' => array(
+            'label' => 'Show 3DS only if FORM has been detected',
+            'help'  => 'Tries to detect 3DS form and determine whether it needs to be shown, ex. it won\'t show auto submitting 3DS forms. In case of false-positive, waits 5 seconds and shows whatever there is (which may require user\'s attention).',
+        ),
+        'never' => array(
+            'label' => 'Never show 3DS',
+            'help'  => 'In case of 3DS - the transaction will be abandoned.',
+        ),
+    );
     ?>
     <div class="wrap">
         <h2>PAAY for WooCommerce</h2>
@@ -161,20 +182,39 @@ function paay_options_page()
                 <tr valign="top">
                     <th scope="row">PAAY key</th>
                     <td><input type="text" name="paay_key" value="<?php echo get_option('paay_key') ?>" /></td>
+                    <td></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row">PAAY secret</th>
                     <td><input type="text" name="paay_secret" value="<?php echo get_option('paay_secret') ?>" /></td>
+                    <td></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">3DS Strategy</th>
+                    <td>
+                        <input type="hidden" name="paay_3ds_strategy" value="<?php echo get_option('paay_3ds_strategy') ?>" />
+                        <select id="paay_3ds_strategy">
+                            <?php foreach ($strategies as $value => $settings): ?>
+                                <option <?php if (get_option('paay_3ds_strategy') === $value): ?>selected="selected"<?php endif; ?> value="<?php echo $value; ?>"><?php echo $settings['label']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td id="paay_3ds_strategy_help">
+                        <p style="display: none;" id="strategy_always"><?php echo $strategies['always']['help']; ?></p>
+                        <p style="display: none;" id="strategy_detected"><?php echo $strategies['detected']['help']; ?></p>
+                        <p style="display: none;" id="strategy_never"><?php echo $strategies['never']['help']; ?></p>
+                    </td>
                 </tr>
 
                 <tr>
-                    <td colspan="2">
+                    <td colspan="3">
                         Advanced <input type="checkbox" id="paay-advanced-toggle" />
                     </td>
                 </tr>
                 <tr class="paay-advanced" valign="top">
                     <th scope="row">PAAY host</th>
                     <td><input type="text" name="paay_host" value="<?php $api_host = get_option('paay_host'); echo (empty($api_host)) ? 'https://api.paay.co' : $api_host; ?>" /></td>
+                    <td></td>
                 </tr>
             </table>
             <?php submit_button() ?>
@@ -188,6 +228,12 @@ function paay_options_page()
                         jQuery('.paay-advanced').hide();
                     }
                 });
+                jQuery('body').on('change', '#paay_3ds_strategy', function(e) {
+                    jQuery('input[name="paay_3ds_strategy"]').val(jQuery(this).val());
+                    jQuery('#paay_3ds_strategy_help p').hide();
+                    jQuery('#paay_3ds_strategy_help #strategy_' + jQuery(this).val()).show();
+                });
+                jQuery('#paay_3ds_strategy').trigger('change');
             });
         </script>
     </div>

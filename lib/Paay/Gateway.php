@@ -172,7 +172,10 @@ class Paay_Gateway extends WC_Payment_Gateway
                 @mkdir($dir, 0777, true);
                 file_put_contents($dir.$order_id.'.dat', json_encode($data));
 
-                echo paay_template('3dsframe', array('order_id' => $order_id));
+                echo paay_template('3dsframe', array(
+                    'order_id'   => $order_id,
+                    'is_visible' => get_option('paay_3ds_strategy'),
+                ));
                 exit;
             }
         } else {
