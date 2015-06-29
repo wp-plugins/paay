@@ -19,8 +19,6 @@ abstract class Paay_Validator_AbstractValidator
 
     public function error($field)
     {
-        global $woocommerce;
-
-        $woocommerce->add_error(__('<strong>'.$field.'</strong>'.' '.$this->error_message, 'woothemes'));
+        wc_add_notice(__('<strong>'.$field.'</strong>'.' '.$this->error_message), 'error');
     }
 }
