@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.15
+Version: 0.16
 Requires at least: 4.0
 Depends: WooCommerce
 Tested up to: 4.2.2
@@ -253,6 +253,7 @@ function paay_options_page()
                         PAAY.config.url.cancelTransaction = \'/?page=paay_handler&paay-module=cancelTransaction\';
                         PAAY.config.url.awaitingApproval = \'/?page=paay_handler&paay-module=awaitingApproval\';
                         PAAY.config.url.sendWebAppLink = \'/?page=paay_handler&paay-module=sendWebAppLink\';
+                        PAAY.config.url.approveWithout3ds = \'/?page=paay_handler&paay-module=approveWithout3ds\';
                         PAAY.config.woocommerce = true;
                     }
                     </script>';
@@ -347,11 +348,37 @@ function paay_options_page()
         }
     }
 
+    function paay_approveWithout3dsHandler()
+    {
+        try {
+            global $woocommerce;
+            $order = new WC_Order($_GET['order']);
+            $gateway = new Paay_Gateway();
+
+            $result = paay_api()->merchantApproveTransaction($_GET['order']);
+            $response = json_decode($result, true);
+
+            if (isset($response['response']) && 'Success' === $response['response']['message']) {
+                $data = $response['response']['data'];
+                if (!empty($data['transaction_id'])) {
+                    $order->payment_complete();
+                    $woocommerce->cart->empty_cart();
+
+                    return sprintf('PAAY.redirect("%s");', $gateway->get_return_url($order));
+                }
+            }
+
+            return 'PAAY.api.error("Failed to approve the transaction")';
+        } catch (\Exception $e) {
+            return 'PAAY.api.error("'.$e->getMessage().'")';
+        }
+    }
+
     function paay_handler()
     {
         $module = trim($_GET['paay-module']);
 
-        if (!in_array($module, array('createTransaction', 'cancelTransaction', 'awaitingApproval', 'sendWebAppLink'))) {
+        if (!in_array($module, array('createTransaction', 'cancelTransaction', 'awaitingApproval', 'sendWebAppLink', 'approveWithout3ds'))) {
             return;
         }
 

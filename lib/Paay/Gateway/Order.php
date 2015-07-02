@@ -2,6 +2,7 @@
 
 class Paay_Gateway_Order
 {
+    private $order = null;
     private $transaction = array(
         'return_url' => '',
         'CreditCard' => array(
@@ -45,6 +46,8 @@ class Paay_Gateway_Order
 
     public function __construct(\WC_Order $order, $post)
     {
+        $this->order = $order;
+
         //Return URL
         $home_url = home_url('/');
         $home_url = add_query_arg('wc-api', 'Paay_Gateway', $home_url);
@@ -90,6 +93,11 @@ class Paay_Gateway_Order
                 'unit_price'  => round($item['line_subtotal'], 2),
             );
         }
+    }
+
+    public function getId()
+    {
+        return $this->order->id;
     }
 
     public function getData()

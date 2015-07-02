@@ -38,6 +38,9 @@ class Paay_Connection_Request
             case 'addTransaction':
                 $this->method = 'POST';
                 break;
+            case 'approveTransaction':
+                $this->method = 'POST';
+                break;
             case 'findUser':
                 $this->method = 'GET';
                 break;

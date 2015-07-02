@@ -144,6 +144,27 @@ class Paay_ApiClient
         return json_encode($result);
     }
 
+    public function merchantApproveTransaction($orderId)
+    {
+        if (empty($orderId)) {
+            throw new Paay_Exception_ApiException('You must provide order number');
+        }
+
+        $transactionId = get_post_meta($orderId, 'transaction_id', true);
+
+        if (empty($transactionId)) {
+            throw new Paay_Exception_ApiException("Transaction id doeasn't exists");
+        }
+
+        $request = new Paay_Connection_Request();
+        $request->resource = 'transactions/merchant-approve/'.$transactionId.'.json';
+        $request->body = array();
+
+        $response = $this->connection->sendRequest($request);
+
+        return $response->body;
+    }
+
     public function declineTransaction($orderId)
     {
         if (empty($orderId)) {
@@ -175,6 +196,8 @@ class Paay_ApiClient
 
         $response = $this->connection->sendRequest($request);
         $result = json_decode($response->body);
+
+        add_post_meta($order->getId(), 'transaction_id', $result->response->data->transaction_id);
 
         return json_encode($result);
     }
