@@ -11,7 +11,6 @@ class Paay_Gateway_Order
             'expiry_month' => '',
             'expiry_year' => '',
             'name_on_card' => '',
-            'description' => '',
             'zip' => '',
         ),
         'Customer' => array(
@@ -61,7 +60,6 @@ class Paay_Gateway_Order
         $this->transaction['CreditCard']['expiry_month'] = $post['paay_expiry_month'];
         $this->transaction['CreditCard']['expiry_year'] = $post['paay_expiry_year'];
         $this->transaction['CreditCard']['name_on_card'] = $post['paay_name_on_card'];
-        $this->transaction['CreditCard']['description'] = $post['paay_description'];
         $this->transaction['CreditCard']['zip'] = $post['paay_zip'];
 
         //Customer

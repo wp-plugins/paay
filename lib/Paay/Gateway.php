@@ -68,10 +68,6 @@ class Paay_Gateway extends WC_Payment_Gateway
                 'label' => 'Name on card',
                 'required' => true,
             ),
-            'paay_description' => array(
-                'label' => 'Card description',
-                'required' => true,
-            ),
             'paay_zip' => array(
                 'label' => 'ZIP on card',
                 'required' => true,
@@ -86,7 +82,16 @@ class Paay_Gateway extends WC_Payment_Gateway
 
             $form .= '<p class="form-row form-row-first '.$required.'" id="'.$field.'_field">';
             $form .= '<label for="'.$field.'" class="">'.$settings['label'].'</label>';
-            $form .= '<input type="text" class="input-text" name="'.$field.'" id="'.$field.'" value="'.$value.'" placeholder="'.$placeholder.'" />';
+            switch($field) {
+                case 'paay_expiry_month':
+                    $form .= $this->createMonthField($field, $value);
+                    break;
+                case 'paay_expiry_year':
+                    $form .= $this->createYearField($field, $value);
+                    break;
+                default:
+                    $form .= '<input type="text" class="input-text" name="'.$field.'" id="'.$field.'" value="'.$value.'" placeholder="'.$placeholder.'" />';
+            }
             $form .= '</p>';
         }
         $form .= '</div>';
@@ -114,13 +119,13 @@ class Paay_Gateway extends WC_Payment_Gateway
                 'value' => $_POST['paay_expiry_year'],
                 'field' => 'Expiry year',
             ),
+            'Expiry' => array(
+                'value' => $_POST['paay_expiry_month'].'-'.$_POST['paay_expiry_year'],
+                'field' => 'Expiry date'
+            ),
             'NameOnCard' => array(
                 'value' => $_POST['paay_name_on_card'],
                 'field' => 'Name on card',
-            ),
-            'Description' => array(
-                'value' => $_POST['paay_description'],
-                'field' => 'Description',
             ),
             'Zip' => array(
                 'value' => $_POST['paay_zip'],
@@ -182,5 +187,61 @@ class Paay_Gateway extends WC_Payment_Gateway
             echo paay_parse_error($response);
             exit;
         }
+    }
+
+    /**
+     * Create select month field (nr month (01,02..) => name of month (jan, feb...)
+     * @param string $field
+     * @param string $value
+     * @return string
+     */
+    private function createMonthField($field, $value)
+    {
+        $date = new DateTime('01-01-2015');
+
+        $str = "<select class='select' name='{$field}' id='{$field}'>";
+
+        while($date->format('Y') !== '2016'){
+            $option = $date->format("m");
+            $desc = $date->format('M');
+
+            if($option === $value){
+                $str .= "<option value='{$option}' selected='selected'>{$desc}</option>";
+            } else {
+                $str .= "<option value='{$option}'>{$desc}</option>";
+            }
+            $date->modify('+1 month');
+        }
+
+        $str .= "</select>";
+
+        return $str;
+    }
+
+    /**
+     * Create select year field (from this year to 15 years later)
+     * @param string $field
+     * @param string $value
+     * @return string
+     */
+    private function createYearField($field, $value)
+    {
+        $date = new DateTime();
+
+        $str = "<select class='select' name='{$field}' id='{$field}'>";
+
+        for($a = 0; $a < 16; $a ++){
+            $year = $date->format('Y');
+            if($year === $value){
+                $str .= "<option value='{$year}' selected='selected'>{$year}</option>";
+            } else {
+                $str .= "<option value='{$year}'>{$year}</option>";
+            }
+            $date->modify('+1 year');
+        }
+
+        $str .= "</select>";
+
+        return $str;
     }
 }

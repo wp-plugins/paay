@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.16
+Version: 0.17
 Requires at least: 4.0
 Depends: WooCommerce
 Tested up to: 4.2.2
@@ -27,7 +27,7 @@ require_once 'lib/Paay/Validator/CAVV.php';
 require_once 'lib/Paay/Validator/Zip.php';
 require_once 'lib/Paay/Validator/ExpiryMonth.php';
 require_once 'lib/Paay/Validator/ExpiryYear.php';
-require_once 'lib/Paay/Validator/Description.php';
+require_once 'lib/Paay/Validator/Expiry.php';
 require_once 'lib/Paay/Validator/NameOnCard.php';
 require_once 'simple_html_dom.php';
 

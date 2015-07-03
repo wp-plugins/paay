@@ -29,7 +29,7 @@ class Paay_WooCommerce
         $defaultAddress = $paayCustomer->Address[0];
 
         foreach ($paayCustomer->Address as $address) {
-            if($addres->is_default) {
+            if($address->is_default) {
                 $defaultAddress = $address;
             }
         }
