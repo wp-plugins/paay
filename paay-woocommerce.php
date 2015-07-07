@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.17
+Version: 0.18
 Requires at least: 4.0
 Depends: WooCommerce
 Tested up to: 4.2.2
