@@ -7,9 +7,9 @@ class Paay_Gateway extends WC_Payment_Gateway
         $this->id = 'paay_gateway'; // Unique ID for your gateway. e.g. ‘your_gateway’
         // $this->icon – If you want to show an image next to the gateway’s name on the frontend, enter a URL to an image.
         $this->has_fields = true; // Bool. Can be set to true if you want payment fields to show on the checkout (if doing a direct integration).
-        $this->method_title = 'PAAY Gateway'; // Title of the payment method shown on the admin page.
+        $this->method_title = 'Credit Card powered by PAAY'; // Title of the payment method shown on the admin page.
         $this->method_description = '<div id="wc_get_started" class="paay"><span class="main"><img class="logo" src="http://paay.co/images/paay-logo.png" alt="PAAY logo" />PAAY</span><span>Safe, fast & incredibly simple mobile payments.</span></div>'; // Description for the payment method shown on the admin page.
-        $this->title = 'PAAY Gateway';
+        $this->title = 'Credit Card powered by PAAY';
         $this->description = 'XXXX';
 
         $this->init_form_fields();
@@ -17,12 +17,20 @@ class Paay_Gateway extends WC_Payment_Gateway
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_api_paay_gateway', array($this, 'check_paay_gateway_response'));
+    }
 
+    public function init_form_fields()
+    {
         $this->form_fields = array(
             'enabled' => array(
                 'title' => __('Enable/Disable', 'woocommerce'),
                 'type' => 'checkbox',
-                'label' => __('Enable Payment', 'woocommerce'),
+                'label' => __('Enable Credit Card powered by PAAY', 'woocommerce'),
+                'default' => 'yes'
+            ),
+            'PAAYButton' => array(
+                'type' => 'checkbox',
+                'label' => __('Enable PAAY Button', 'woocommerce'),
                 'default' => 'yes'
             ),
         );
@@ -57,15 +65,16 @@ class Paay_Gateway extends WC_Payment_Gateway
                 'required' => true,
             ),
             'paay_expiry_month' => array(
-                'label' => 'Expiry month (MM)',
+                'label' => 'Expiration month (MM)',
                 'required' => true,
             ),
             'paay_expiry_year' => array(
-                'label' => 'Expiry month (YYYY)',
+                'label' => 'Expiration year (YYYY)',
                 'required' => true,
             ),
             'paay_name_on_card' => array(
                 'label' => 'Name on card',
+                'placeholder' => 'First Last Name',
                 'required' => true,
             ),
             'paay_zip' => array(
@@ -94,8 +103,10 @@ class Paay_Gateway extends WC_Payment_Gateway
             }
             $form .= '</p>';
         }
+
         $form .= '</div>';
         $form .= '<script type="text/javascript">window.paay_order_redirect = function(order_url) { window.location.href = order_url; }</script>';
+        $form .= $this->getCreditCardLogoScript();
 
         echo $form;
     }
@@ -121,7 +132,7 @@ class Paay_Gateway extends WC_Payment_Gateway
             ),
             'Expiry' => array(
                 'value' => $_POST['paay_expiry_month'].'-'.$_POST['paay_expiry_year'],
-                'field' => 'Expiry date'
+                'field' => 'Expiration date'
             ),
             'NameOnCard' => array(
                 'value' => $_POST['paay_name_on_card'],
@@ -243,5 +254,70 @@ class Paay_Gateway extends WC_Payment_Gateway
         $str .= "</select>";
 
         return $str;
+    }
+
+    /**
+     * Add js script to PAAY Gateway
+     * Show credit card logo based on PAN number
+     * @return string
+     */
+    private function getCreditCardLogoScript()
+    {
+        return '<script type="text/javascript">;
+
+            var numberField = jQuery("#paay_pan");
+            var imgSrc = "/wp-content/plugins/paay/images/paay/";
+            var amex = imgSrc+"amex.gif";
+            var visa = imgSrc+"visa.gif";
+            var mc = imgSrc+"mastercard.gif";
+            var discover = imgSrc+"discover.jpg";
+
+            numberField.on("input", function(){
+                var number = jQuery(this).val();
+
+                if(number.length < 4){
+                    numberField.cleanInput();
+                    return;
+                }
+
+                image = getCardLogo(number);
+                if(image !== false){
+                    numberField.css({
+                        "background" : "white url(\'"+image+"\') no-repeat right 2px",
+                        "background-size" : "60px 35px",
+                        "padding-right" : "65px"
+                    });
+                } else {
+                    numberField.cleanInput();
+                }
+            });
+
+            function getCardLogo(number)
+            {
+                if(number.match(/^4[0-9]{3}.*/i)){
+                    return visa;
+                }
+                if(number.match(/^5[0-9]{3}.*/i)){
+                    return mc;
+                }
+                if(number.match(/^3[47][0-9]{2}.*/i)){
+                    return amex;
+                }
+                if(number.match(/^6011.*/)){
+                    return discover;
+                }
+
+                return false;
+            }
+
+            jQuery.fn.cleanInput = function()
+            {
+                this.css({
+                    "background" : "white none",
+                    "padding-right" : "10px"
+                });
+            }
+
+        </script>';
     }
 }
