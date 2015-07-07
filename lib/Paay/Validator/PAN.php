@@ -2,7 +2,7 @@
 
 class Paay_Validator_PAN extends Paay_Validator_AbstractValidator
 {
-    protected $error_message = 'should be 16 digits';
+    protected $error_message = 'should be 15 or 16 digits';
 
     public function validator($value)
     {
@@ -16,7 +16,7 @@ class Paay_Validator_PAN extends Paay_Validator_AbstractValidator
             return false;
         }
 
-        if (strlen($value) !== 16) {
+        if (strlen($value) < 15 || strlen($value) > 16) {
             return false;
         }
 
