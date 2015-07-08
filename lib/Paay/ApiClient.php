@@ -57,14 +57,14 @@ class Paay_ApiClient
         $orderId = (null === $orderId) ? $this->wc->createOrder($customer) : $orderId;
         $order = new WC_Order($orderId);
 
-        $thanksPageId = woocommerce_get_page_id('thanks');
+        $thanksPageId = wc_get_page_id('thanks');
         $thanksUrl = get_permalink($thanksPageId);
         $prefix = (false === strpos($thanksUrl, '?')) ? '?' : '&';
         $thanksUrl .= $prefix.'order=' . $orderId . '&key=' . $order->order_key;
         $cartItems = array();
 
         foreach ($order->get_items() as $item) {
-            $product = get_product($item['product_id']);
+            $product = wc_get_product($item['product_id']);
 
             $cartItems[] = array(
                 'description' => $product->get_title(),
@@ -129,15 +129,21 @@ class Paay_ApiClient
         $request->resource = 'transactions.json';
         $request->body = $data;
 
+        try {
+            $response = $this->connection->sendRequest($request);
+        } catch(\Exception $e){
+            throw $e;
+        }
 
-        $response = $this->connection->sendRequest($request);
         $result = json_decode($response->body);
 
         if (isset($result->response) && isset($result->response->message) && (string)$result->response->message!='Success') {
             throw new Paay_Exception_ApiException((string)$result->response->message.': '.(string)$result->response->data);
         }
 
-        add_post_meta($orderId, 'transaction_id', $result->response->data->Transaction->id);
+        if(!add_post_meta($orderId, 'transaction_id', $result->response->data->Transaction->id, true)) {
+            update_post_meta($orderId, 'transaction_id', $result->response->data->Transaction->id);
+        }
 
         $result->response->order_id = $orderId;
 

@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.18
+Version: 0.19
 Requires at least: 4.0
 Depends: WooCommerce
 Tested up to: 4.2.2
@@ -401,99 +401,19 @@ function paay_template($template, $var = array())
     return $contents;
 }
 
-function paay_box($info, $content = '', $type = 'success')
+function paay_box($type = 'success', $content = '', $info)
 {
     return paay_template('paay_box', array(
         'type'      => $type,
-        'info'      => $info,
-        'content'   => $content
+        'content'   => $content,
+        'info'      => $info
     ));
-}
-
-function paay_parse_form($form_html)
-{
-    $data = str_replace("\n", '', $form_html);
-    $data = stripcslashes($data);
-
-    $dom = str_get_html($data);
-    $form = $dom->find('form', 0);
-    $forms = array($form);
-    // $forms = $dom->find('form');
-
-    $forms_html = '';
-    foreach ($forms as $form) {
-        $form->class = '';
-
-        //Remove all noscript tags
-        $noscripts = $form->find('noscript');
-        if (!empty($noscripts)) {
-            foreach ($noscripts as $noscript) {
-                $noscript->outertext = '';
-            }
-        }
-
-        //Remove existing submits
-        $submits = $form->find('input[type="submit"]');
-        if (!empty($submits)) {
-            foreach ($submits as $submit) {
-                $submit->outertext = '';
-            }
-        }
-
-        //Remove built in form styles
-        //Labels
-        $labels = $form->find('label');
-        $labels_set = array();
-        foreach ($labels as $label) {
-            if (!empty($label->for)) {
-                $label->class = '';
-                $labels_set[$label->for] = $label;
-            }
-        }
-
-        //Inputs
-        $inputs = $form->find('input[type!="submit"], select, textarea');
-        $inputs_set = array();
-        foreach ($inputs as $input) {
-            $input->class = '';
-            if (!empty($input->id)) {
-                $inputs_set[$input->id] = $input;
-            } else {
-                $inputs_set['paay-'.uniqid()] = $input;
-            }
-        }
-
-        //Connect labels with inputs
-        $inputs_html = '<ul>';
-        //labelled inputs
-        foreach ($labels_set as $key => $label) {
-            if (isset($inputs_set[$key])) {
-                $inputs_html .= '<li>'.$label->__toString().$inputs_set[$key]->__toString().'</li>';
-                unset($inputs_set[$key]);
-            }
-        }
-        //inputs without labels
-        foreach ($inputs_set as $key => $input) {
-            $inputs_html .= '<li>'.$input->__toString().'</li>';
-        }
-        $inputs_html .= '</ul>';
-        $form->innertext = $inputs_html;
-
-        //Add PAAY submit
-        $form->innertext = $form->innertext.'<input type="submit" value="Proceed to PAAY" />';
-
-        $forms_html .= $form->__toString();
-    }
-
-    $info = 'Every PAAY transaction goes straight to your phone where you can verify and confirm or cancel the order. The only information the merchant sees is the transaction, not your credit card numbers.';
-
-    return paay_box($info, $forms_html);
 }
 
 function paay_parse_error($response)
 {
-    $message = (isset($response['response']['data']) && !empty($response['response']['data'])) ? $response['response']['data'] : 'Transaction processing failed';
     $fid = (isset($response['response']['fid']) && !empty($response['response']['fid'])) ? $response['response']['fid'] : '';
+    $message = "Could not create a transaction. Please try again later.";
 
-    return paay_box($message.' If it\'s still not working, please contact PAAY and provide this number: '.$fid, '', 'error');
+    return paay_box('error', $message, $fid);
 }
