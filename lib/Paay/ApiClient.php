@@ -43,6 +43,11 @@ class Paay_ApiClient
      * used to create transaction
      *
      * @param string $phoneNumber
+     * @param $wcShipping
+     * @param null $orderId
+     * @return mixed|string|void
+     * @throws Exception
+     * @throws Paay_Exception_ApiException
      */
     public function addTransaction($phoneNumber, $wcShipping, $orderId = null)
     {
@@ -122,7 +127,6 @@ class Paay_ApiClient
                 'ShippingOption' => $shippingMethods,
             ))),
         );
-
 
         $request = new Paay_Connection_Request();
         $request->setOperation('addTransaction');

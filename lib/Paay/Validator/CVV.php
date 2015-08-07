@@ -1,8 +1,8 @@
 <?php
 
-class Paay_Validator_CAVV extends Paay_Validator_AbstractValidator
+class Paay_Validator_CVV extends Paay_Validator_AbstractValidator
 {
-    protected $error_message = 'should be valid CAVV';
+    protected $error_message = 'Should be valid CVV';
 
     public function validator($value)
     {

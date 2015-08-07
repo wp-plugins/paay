@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.19
+Version: 0.2
 Requires at least: 4.0
 Depends: WooCommerce
 Tested up to: 4.2.2
@@ -15,7 +15,7 @@ License: GPL2
 //Test for WooCommerce
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 if (!is_plugin_active('woocommerce/woocommerce.php')) {
- return;
+    return;
 }
 
 require_once 'lib/Paay/Gateway/Order.php';
@@ -23,7 +23,7 @@ require_once 'lib/Paay/ApiClient.php';
 require_once 'lib/Paay/WooCommerce.php';
 require_once 'lib/Paay/Validator/AbstractValidator.php';
 require_once 'lib/Paay/Validator/PAN.php';
-require_once 'lib/Paay/Validator/CAVV.php';
+require_once 'lib/Paay/Validator/CVV.php';
 require_once 'lib/Paay/Validator/Zip.php';
 require_once 'lib/Paay/Validator/ExpiryMonth.php';
 require_once 'lib/Paay/Validator/ExpiryYear.php';
@@ -32,8 +32,6 @@ require_once 'lib/Paay/Validator/NameOnCard.php';
 require_once 'simple_html_dom.php';
 
 add_action('woocommerce_proceed_to_checkout', 'paay_checkout');
-add_action('admin_init', 'register_paay_settings');
-add_action('admin_menu', 'paay_plugin_menu');
 
 add_action('plugins_loaded', 'init_paay_gateway_class');
 add_filter('woocommerce_payment_gateways', 'add_paay_gateway_class');
@@ -43,11 +41,12 @@ add_action('init', 'paay_handler');
 add_action('init', 'paay_3ds_form');
 
 wp_enqueue_style('paay', '//plugins.paay.co/css/paay.css');
-wp_enqueue_script('paay', '//plugins.paay.co/js/paay.js', array(), false, true);
+wp_enqueue_script('paay', '//plugins.paay.co/js/paay_new.js', array(), false, true);
 
 add_action('woocommerce_thankyou', 'paay_foo');
 
-function isSecure() {
+function isSecure()
+{
   return
     (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || $_SERVER['SERVER_PORT'] == 443;
@@ -64,9 +63,11 @@ function paay_3ds_form()
     if ('paay-3ds-form' !== @$_GET['paay-module']) {
         return;
     }
+
+    $gateway = new Paay_Gateway();
     $data = file_get_contents(get_temp_dir().'/3ds/'.$_GET['order'].'.dat');
     $data = json_decode($data, true);
-    $is_visible = get_option('paay_3ds_strategy');
+    $is_visible = $gateway->settings['paay_3ds_strategy'];
     if ('always' === $is_visible) {
         $data['is_form_visible'] = true;
     } elseif ('never' === $is_visible) {
@@ -77,52 +78,15 @@ function paay_3ds_form()
     exit;
 }
 
+function paayPluginPath()
+{
+    $pluginUrl = plugins_url('/paay-woocommerce.php', __FILE__);
+    return preg_replace('/paay\-woocommerce\.php/','', $pluginUrl);
+}
+
 function paay_gateway_admin_css()
 {
-    $style = <<< EOT
-<style type="text/css">
-/*<![CDATA[*/
-
-#wc_get_started.paay {
-    background: #f5f5f5;
-    padding: 15px;
-    overflow: hidden;
-
-    border: 0;
-    border-bottom: 1px solid rgb(81, 158, 44);
-    background-image: #a6db2b;
-    background-image: -moz-linear-gradient(top, #a6db2b 18%, #54bc0f 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(18%,#a6db2b), color-stop(100%,#54bc0f));
-    background-image: -webkit-linear-gradient(top, #a6db2b 18%,#54bc0f 100%);
-    background-image: -o-linear-gradient(top, #a6db2b 18%,#54bc0f 100%);
-    background-image: -ms-linear-gradient(top, #a6db2b 18%,#54bc0f 100%);
-    background-image: linear-gradient(to bottom, #a6db2b 18%,#54bc0f 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6db2b', endColorstr='#54bc0f',GradientType=0 );
-}
-#wc_get_started span {
-    color: #ffffff;
-    text-shadow: -1px -1px #A6DB2B;
-    -webkit-transition: all ease-in 0.3s;
-    -moz-transition: all ease-in 0.3s;
-    -o-transition: all ease-in 0.3s;
-    transition: all ease-in 0.3s;
-}
-#wc_get_started.paay .main {
-    clear: both;
-}
-#wc_get_started.paay .main .logo {
-    width: 120px;
-    float: left;
-    margin-right: 20px;
-}
-.paay-advanced {
-    display: none;
-}
-/*]]>*/
-        </style>
-EOT;
-
-    echo $style;
+    echo '<style type="text/css">'. file_get_contents(dirname(__FILE__).'/css/admin_woo_paay.css') .'<style>';
 }
 
 function add_paay_gateway_class($methods)
@@ -139,128 +103,12 @@ function init_paay_gateway_class()
     }
 }
 
-function paay_plugin_menu()
-{
-    add_options_page('PAAY', 'PAAY', 'manage_options', 'paay_options', 'paay_options_page');
-}
-
-function register_paay_settings()
-{
-    register_setting('paay', 'paay_key');
-    register_setting('paay', 'paay_secret');
-    register_setting('paay', 'paay_host');
-    register_setting('paay', 'paay_3ds_strategy');
-}
-
-function paay_options_page()
-{
-    if (!current_user_can( 'manage_options' )) {
-        wp_die(__( 'You do not have sufficient permissions to access this page.' ));
-    }
-    $strategies = array(
-        'always' => array(
-            'label' => 'Always show 3DS',
-            'help'  => 'Displays 3DS form if 3DS card has been detected. Works like normal 3DS.',
-        ),
-        'detected' => array(
-            'label' => 'Show 3DS only if FORM has been detected',
-            'help'  => 'Tries to detect 3DS form and determine whether it needs to be shown, ex. it won\'t show auto submitting 3DS forms. In case of false-positive, waits 5 seconds and shows whatever there is (which may require user\'s attention).',
-        ),
-        'never' => array(
-            'label' => 'Never show 3DS',
-            'help'  => 'In case of 3DS - the transaction will be abandoned.',
-        ),
-    );
-    ?>
-    <div class="wrap">
-        <h2>PAAY for WooCommerce</h2>
-
-        <form action="options.php" method="post">
-            <?php settings_fields( 'paay' ); ?>
-            <?php // do_settings('paay'); ?>
-            <table class="form-table">
-                <tr valign="top">
-                    <th scope="row">PAAY key</th>
-                    <td><input type="text" name="paay_key" value="<?php echo get_option('paay_key') ?>" /></td>
-                    <td></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">PAAY secret</th>
-                    <td><input type="text" name="paay_secret" value="<?php echo get_option('paay_secret') ?>" /></td>
-                    <td></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">3DS Strategy</th>
-                    <td>
-                        <input type="hidden" name="paay_3ds_strategy" value="<?php echo get_option('paay_3ds_strategy') ?>" />
-                        <select id="paay_3ds_strategy">
-                            <?php foreach ($strategies as $value => $settings): ?>
-                                <option <?php if (get_option('paay_3ds_strategy') === $value): ?>selected="selected"<?php endif; ?> value="<?php echo $value; ?>"><?php echo $settings['label']; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </td>
-                    <td id="paay_3ds_strategy_help">
-                        <p style="display: none;" id="strategy_always"><?php echo $strategies['always']['help']; ?></p>
-                        <p style="display: none;" id="strategy_detected"><?php echo $strategies['detected']['help']; ?></p>
-                        <p style="display: none;" id="strategy_never"><?php echo $strategies['never']['help']; ?></p>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td colspan="3">
-                        Advanced <input type="checkbox" id="paay-advanced-toggle" />
-                    </td>
-                </tr>
-                <tr class="paay-advanced" valign="top">
-                    <th scope="row">PAAY host</th>
-                    <td><input type="text" name="paay_host" value="<?php $api_host = get_option('paay_host'); echo (empty($api_host)) ? 'https://api.paay.co' : $api_host; ?>" /></td>
-                    <td></td>
-                </tr>
-            </table>
-            <?php submit_button() ?>
-        </form>
-        <script type="text/javascript">
-            jQuery(document).ready(function() {
-                jQuery('body').on('change', '#paay-advanced-toggle', function(e) {
-                    if (jQuery(this).is(':checked')) {
-                        jQuery('.paay-advanced').show();
-                    } else {
-                        jQuery('.paay-advanced').hide();
-                    }
-                });
-                jQuery('body').on('change', '#paay_3ds_strategy', function(e) {
-                    jQuery('input[name="paay_3ds_strategy"]').val(jQuery(this).val());
-                    jQuery('#paay_3ds_strategy_help p').hide();
-                    jQuery('#paay_3ds_strategy_help #strategy_' + jQuery(this).val()).show();
-                });
-                jQuery('#paay_3ds_strategy').trigger('change');
-            });
-        </script>
-    </div>
-    <?php
-}
-
 function paay_checkout()
 {
     $gateway = new Paay_Gateway();
     $button = $gateway->settings['PAAYButton'] == "yes";
 
-    $html = array();
-    $html[] = ($button) ? '<div class="paay-button-placeholder"></div>' : '';
-    $html[] = '<script type="text/javascript">
-                var PAAY = PAAY || {};
-                PAAY.config = PAAY.config || {};
-                PAAY.config.url = PAAY.config.url || {};
-                if (undefined === PAAY.config.woocommerce) {
-                    PAAY.config.url.createTransaction = \'/?page=paay_handler&paay-module=createTransaction\';
-                    PAAY.config.url.cancelTransaction = \'/?page=paay_handler&paay-module=cancelTransaction\';
-                    PAAY.config.url.awaitingApproval = \'/?page=paay_handler&paay-module=awaitingApproval\';
-                    PAAY.config.url.sendWebAppLink = \'/?page=paay_handler&paay-module=sendWebAppLink\';
-                    PAAY.config.url.approveWithout3ds = \'/?page=paay_handler&paay-module=approveWithout3ds\';
-                    PAAY.config.woocommerce = true;
-                }
-                </script>';
-    echo join('', $html);
+    echo paay_template('paay_button', $var = array('visible' => $button));
 }
 
 function paay_wc()
@@ -278,12 +126,13 @@ function paay_wc()
 function paay_api()
 {
     static $api = null;
+    $gateway = new Paay_Gateway();
 
     if (null === $api) {
         $api = new Paay_ApiClient(
-            get_option('paay_host'),
-            get_option('paay_key'),
-            get_option('paay_secret'),
+            $gateway->settings['paay_host'],
+            $gateway->settings['paay_key'],
+            $gateway->settings['paay_secret'],
             paay_wc()
         );
     }
@@ -295,11 +144,11 @@ function paay_createTransactionHandler()
 {
     try {
         $result = paay_api()->addTransaction($_GET['telephone'], paay_wc()->getShipping(), null);
-        $response = 'PAAY.api.createTransactionCallback('.$result.')';
+        $response = 'paayWoo.api.createTransactionCallback('.$result.')';
 
         return $response;
     } catch (\Exception $e) {
-        return 'PAAY.api.error("'.$e->getMessage().'")';
+        return 'paayWoo.api.error("'.$e->getMessage().'")';
     }
 }
 
@@ -311,7 +160,7 @@ function paay_cancelTransactionHandler()
 
         return $response;
     } catch (\Exception $e) {
-        return 'PAAY.api.error("'.$e->getMessage().'")';
+        return 'paayWoo.api.error("'.$e->getMessage().'")';
     }
 }
 
@@ -334,12 +183,15 @@ function paay_awaitingApprovalHandler()
             );
         }
 
-        return sprintf('PAAY.api.awaitingApprovalCallback(%s)', json_encode($response));
+        return sprintf('paayWoo.api.awaitingApprovalCallback(%s)', json_encode($response));
     } catch (\Exception $e) {
-        return 'PAAY.api.error("'.$e->getMessage().'")';
+        return 'paayWoo.api.error("'.$e->getMessage().'")';
     }
 }
 
+/**
+ * Old - to remove
+ */
 function paay_sendWebAppLinkHandler()
 {
     try {
@@ -347,7 +199,7 @@ function paay_sendWebAppLinkHandler()
 
         return 'return true;';
     } catch (\Exception $e) {
-        return 'PAAY.api.error("'.$e->getMessage().'")';
+        return 'paayWoo.api.error("'.$e->getMessage().'")';
     }
 }
 
@@ -367,13 +219,13 @@ function paay_approveWithout3dsHandler()
                 $order->payment_complete();
                 $woocommerce->cart->empty_cart();
 
-                return sprintf('PAAY.redirect("%s");', $gateway->get_return_url($order));
+                return sprintf('paayWoo.redirect("%s");', $gateway->get_return_url($order));
             }
         }
 
-        return 'PAAY.api.error("Failed to approve the transaction")';
+        return 'paayWoo.api.error("Failed to approve the transaction")';
     } catch (\Exception $e) {
-        return 'PAAY.api.error("'.$e->getMessage().'")';
+        return 'paayWoo.api.error("'.$e->getMessage().'")';
     }
 }
 

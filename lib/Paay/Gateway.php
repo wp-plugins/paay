@@ -5,10 +5,9 @@ class Paay_Gateway extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id = 'paay_gateway'; // Unique ID for your gateway. e.g. ‘your_gateway’
-        // $this->icon – If you want to show an image next to the gateway’s name on the frontend, enter a URL to an image.
         $this->has_fields = true; // Bool. Can be set to true if you want payment fields to show on the checkout (if doing a direct integration).
         $this->method_title = 'Credit Card powered by PAAY'; // Title of the payment method shown on the admin page.
-        $this->method_description = '<div id="wc_get_started" class="paay"><span class="main"><img class="logo" src="http://paay.co/images/paay-logo.png" alt="PAAY logo" />PAAY</span><span>Safe, fast & incredibly simple mobile payments.</span></div>'; // Description for the payment method shown on the admin page.
+        $this->method_description = '<div id="wc_get_started" class="paay"><span class="main"><img class="logo" src="'. paayPluginPath() .'images/paay/paay.jpg" alt="PAAY logo" style="width:25px; height:25px"/>PAAY</span><span>Safe, fast & incredibly simple mobile payments.</span></div>'; // Description for the payment method shown on the admin page.
         $this->title = 'Credit Card powered by PAAY';
         $this->description = 'XXXX';
 
@@ -21,18 +20,44 @@ class Paay_Gateway extends WC_Payment_Gateway
 
     public function init_form_fields()
     {
+        $strategies = array(
+            'always' => 'Always show 3DS',
+            'detected' => 'Show 3DS only if FORM has been detected',
+            'never' => 'Never show 3DS',
+        );
+
         $this->form_fields = array(
             'enabled' => array(
-                'title' => __('Enable/Disable', 'woocommerce'),
+                'title' => __('Enable/Disable', 'woocommercepaay'),
                 'type' => 'checkbox',
-                'label' => __('Enable Credit Card powered by PAAY', 'woocommerce'),
+                'label' => __('Enable Credit Card powered by PAAY', 'woocommercepaay'),
                 'default' => 'yes'
             ),
             'PAAYButton' => array(
                 'type' => 'checkbox',
-                'label' => __('Enable PAAY Button', 'woocommerce'),
+                'label' => __('Enable PAAY Button', 'woocommercepaay'),
                 'default' => 'yes'
             ),
+            'paay_key' => array(
+                'title' => __('Merchant "API KEY"', 'woocommercepaay'),
+                'type' => 'text',
+                'label' => __('Merchant "API KEY"', 'woocommercepaay'),
+            ),
+            'paay_secret' => array(
+                'title' => __('Merchant "API SECRET"', 'woocommercepaay'),
+                'type' => 'text',
+                'label' => __('Merchant "API SECRET"', 'woocommercepaay'),
+            ),
+            'paay_3ds_strategy' => array(
+                'title' => __('3DS Strategy', 'woocommercepaay'),
+                'type' => 'select',
+                'options' => $strategies,
+            ),
+            'paay_host' => array(
+                'title' => __('PAAY host', 'woocommercepaay'),
+                'type' => 'text',
+                'default' => 'https://api.paay.co'
+            )
         );
     }
 
@@ -60,8 +85,8 @@ class Paay_Gateway extends WC_Payment_Gateway
                 'label' => 'Credit card',
                 'required' => true,
             ),
-            'paay_cavv' => array(
-                'label' => 'CAVV',
+            'paay_cvv' => array(
+                'label' => 'CVV',
                 'required' => true,
             ),
             'paay_expiry_month' => array(
@@ -118,9 +143,9 @@ class Paay_Gateway extends WC_Payment_Gateway
                 'value' => $_POST['paay_pan'],
                 'field' => 'Credit card',
             ),
-            'CAVV' => array(
-                'value' => $_POST['paay_cavv'],
-                'field' => 'CAVV',
+            'CVV' => array(
+                'value' => $_POST['paay_cvv'],
+                'field' => 'CVV',
             ),
             'ExpiryMonth' => array(
                 'value' => $_POST['paay_expiry_month'],
@@ -162,7 +187,12 @@ class Paay_Gateway extends WC_Payment_Gateway
     {
         global $woocommerce;
         $wc = new Paay_WooCommerce($woocommerce);
-        $apiClient = new Paay_ApiClient(get_option('paay_host'), get_option('paay_key'), get_option('paay_secret'), $wc);
+        $apiClient = new Paay_ApiClient(
+            $this->settings['paay_host'],
+            $this->settings['paay_key'],
+            $this->settings['paay_secret'],
+            $wc
+        );
         $order = new WC_Order($order_id);
         $paay_order = new Paay_Gateway_Order($order, $_POST);
 
@@ -190,7 +220,7 @@ class Paay_Gateway extends WC_Payment_Gateway
 
                 echo paay_template('3dsframe', array(
                     'order_id'   => $order_id,
-                    'is_visible' => get_option('paay_3ds_strategy'),
+                    'is_visible' => $this->settings['paay_3ds_strategy'],
                 ));
                 exit;
             }
@@ -217,9 +247,9 @@ class Paay_Gateway extends WC_Payment_Gateway
             $desc = $date->format('M');
 
             if($option === $value){
-                $str .= "<option value='{$option}' selected='selected'>{$desc}</option>";
+                $str .= "<option value='{$option}' selected='selected'>{$option} - {$desc}</option>";
             } else {
-                $str .= "<option value='{$option}'>{$desc}</option>";
+                $str .= "<option value='{$option}'>{$option} - {$desc}</option>";
             }
             $date->modify('+1 month');
         }
@@ -266,7 +296,7 @@ class Paay_Gateway extends WC_Payment_Gateway
         return '<script type="text/javascript">;
 
             var numberField = jQuery("#paay_pan");
-            var imgSrc = "/wp-content/plugins/paay/images/paay/";
+            var imgSrc = "'. paayPluginPath() .'images/paay/";
             var amex = imgSrc+"amex.gif";
             var visa = imgSrc+"visa.gif";
             var mc = imgSrc+"mastercard.gif";
