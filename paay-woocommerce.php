@@ -4,7 +4,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.22
+Version: 0.23
 Requires at least: 4.0
 Depends: WooCommerce
 Tested up to: 4.2.2
@@ -75,17 +75,17 @@ function paay_3ds_form()
         $data['is_form_visible'] = false;
     }
 
-if ('get' !== strtolower($_SERVER['REQUEST_METHOD'])) {
-$result = array(
-'result' => 'success',
-'messages' => paay_template('3dsautosubmit', $data),
-);
-echo json_encode($result);
-exit;
-} else {
-    echo paay_template('3dsautosubmit', $data);
-    exit;
-}
+    if ('get' !== strtolower($_SERVER['REQUEST_METHOD'])) {
+        $result = array(
+            'result' => 'success',
+            'messages' => paay_template('3dsautosubmit', $data),
+        );
+        echo json_encode($result);
+        exit;
+    } else {
+        echo paay_template('3dsautosubmit', $data);
+        exit;
+    }
 }
 
 function paayPluginPath()
