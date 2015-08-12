@@ -1,3 +1,4 @@
+
 <?php
 /*
 Plugin Name: PAAY for WooCommerce
@@ -65,7 +66,7 @@ function paay_3ds_form()
     }
 
     $gateway = new Paay_Gateway();
-    $data = file_get_contents(get_temp_dir().'/3ds/'.$_GET['order'].'.dat');
+    $data = file_get_contents(get_temp_dir().'/3ds/'.@$_GET['order'].'.dat');
     $data = json_decode($data, true);
     $is_visible = $gateway->settings['paay_3ds_strategy'];
     if ('always' === $is_visible) {
@@ -74,8 +75,17 @@ function paay_3ds_form()
         $data['is_form_visible'] = false;
     }
 
+if ('get' !== strtolower($_SERVER['REQUEST_METHOD'])) {
+$result = array(
+'result' => 'success',
+'messages' => paay_template('3dsautosubmit', $data),
+);
+echo json_encode($result);
+exit;
+} else {
     echo paay_template('3dsautosubmit', $data);
     exit;
+}
 }
 
 function paayPluginPath()
@@ -105,6 +115,9 @@ function init_paay_gateway_class()
 
 function paay_checkout()
 {
+if ('get' !== strtolower($_SERVER['REQUEST_METHOD'])) {
+  return;
+}
     $gateway = new Paay_Gateway();
     $button = $gateway->settings['PAAYButton'] == "yes";
 
@@ -231,7 +244,7 @@ function paay_approveWithout3dsHandler()
 
 function paay_handler()
 {
-    $module = trim($_GET['paay-module']);
+    $module = trim(@$_GET['paay-module']);
 
     if (!in_array($module, array('createTransaction', 'cancelTransaction', 'awaitingApproval', 'sendWebAppLink', 'approveWithout3ds'))) {
         return;
