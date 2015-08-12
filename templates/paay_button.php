@@ -7,10 +7,10 @@
         var settings = {};
 
         window.paayWoo = new PAAY(
-            '/?page=paay_gf_handler&paay-module=createTransaction',
-            '/?page=paay_gf_handler&paay-module=cancelTransaction',
-            '/?page=paay_gf_handler&paay-module=awaitingApproval',
-            '/?page=paay_gf_handler&paay-module=approveWithout3ds',
+            '/?page=paay_handler&paay-module=createTransaction',
+            '/?page=paay_handler&paay-module=cancelTransaction',
+            '/?page=paay_handler&paay-module=awaitingApproval',
+            '/?page=paay_handler&paay-module=approveWithout3ds',
             settings
         );
         paayWoo.loadButtons();
