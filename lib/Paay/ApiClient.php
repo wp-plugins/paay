@@ -34,6 +34,10 @@ class Paay_ApiClient
             $cost = $shipping->cost_per_order;
         }
 
+        if (0 === $cost && isset($shipping->fee) && is_numeric($shipping->fee) && $shipping->fee > 0) {
+            $cost = $shipping->fee;
+        }
+
         return $cost;
     }
 
