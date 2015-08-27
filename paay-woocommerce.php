@@ -3,10 +3,10 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.25
-Requires at least: 4.0
+Version: 0.26
+Requires at least: 4.3
 Depends: WooCommerce
-Tested up to: 4.2.2
+Tested up to: 4.3
 Author: PAAY
 Author URI: http://www.paay.co/
 License: GPL2
@@ -31,20 +31,22 @@ require_once 'lib/Paay/Validator/Expiry.php';
 require_once 'lib/Paay/Validator/NameOnCard.php';
 require_once 'simple_html_dom.php';
 
-add_action('woocommerce_proceed_to_checkout', 'paay_checkout');
-
 add_action('plugins_loaded', 'init_paay_gateway_class');
-add_filter('woocommerce_payment_gateways', 'add_paay_gateway_class');
 add_action('admin_head', 'paay_gateway_admin_css');
-
 add_action('init', 'paay_handler');
-add_action('init', 'paay_3ds_form');
+add_action('init', 'standalone_checkout');
+
+add_action('woocommerce_proceed_to_checkout', 'paay_checkout');
+add_action('woocommerce_thankyou', 'paay_foo');
+
+add_filter('woocommerce_payment_gateways', 'add_paay_gateway_class');
 
 wp_enqueue_style('paay', '//plugins.paay.co/css/paay.css');
 wp_enqueue_script('paay', '//plugins.paay.co/js/paay_new.js', array(), false, true);
 
-add_action('woocommerce_thankyou', 'paay_foo');
-
+/**
+ * Helper methods
+ */
 function isSecure()
 {
   return
@@ -58,7 +60,64 @@ function paay_foo($order_id)
     echo '<script type="text/javascript">if (typeof(window.parent.paay_order_redirect) == \'function\') {window.parent.paay_order_redirect(window.location.href.replace(/^http[s]?:/, \''.$prefix.'\'));}</script>';
 }
 
-function paay_3ds_form()
+function add_paay_gateway_class($methods)
+{
+    $methods[] = 'Paay_Gateway';
+
+    return $methods;
+}
+
+function paayPluginPath()
+{
+    $pluginUrl = plugins_url('/paay-woocommerce.php', __FILE__);
+    return preg_replace('/paay\-woocommerce\.php/','', $pluginUrl);
+}
+
+function paay_gateway_admin_css()
+{
+    echo '<style type="text/css">'. file_get_contents(dirname(__FILE__).'/css/admin_woo_paay.css') .'<style>';
+}
+
+function init_paay_gateway_class()
+{
+    if (!class_exists('Paay_Gateway')) {
+        require dirname(__FILE__).'/lib/Paay/Gateway.php';
+    }
+}
+
+function paay_api()
+{
+    static $api = null;
+    $gateway = new Paay_Gateway();
+
+    if (null === $api) {
+        $api = new Paay_ApiClient(
+            $gateway->settings['paay_host'],
+            $gateway->settings['paay_key'],
+            $gateway->settings['paay_secret'],
+            paay_wc()
+        );
+    }
+
+    return $api;
+}
+
+function paay_wc()
+{
+    static $paay_wc = null;
+
+    if (null === $paay_wc) {
+        global $woocommerce;
+        $paay_wc = new Paay_WooCommerce($woocommerce);
+    }
+
+    return $paay_wc;
+}
+
+/**
+ * Standalone checkout process
+ */
+function standalone_checkout()
 {
     if ('paay-3ds-form' !== @$_GET['paay-module']) {
         return;
@@ -87,69 +146,37 @@ function paay_3ds_form()
     }
 }
 
-function paayPluginPath()
-{
-    $pluginUrl = plugins_url('/paay-woocommerce.php', __FILE__);
-    return preg_replace('/paay\-woocommerce\.php/','', $pluginUrl);
-}
-
-function paay_gateway_admin_css()
-{
-    echo '<style type="text/css">'. file_get_contents(dirname(__FILE__).'/css/admin_woo_paay.css') .'<style>';
-}
-
-function add_paay_gateway_class($methods)
-{
-    $methods[] = 'Paay_Gateway';
-
-    return $methods;
-}
-
-function init_paay_gateway_class()
-{
-    if (!class_exists('Paay_Gateway')) {
-        require dirname(__FILE__).'/lib/Paay/Gateway.php';
-    }
-}
-
+/**
+ * Show PAAY Button
+ */
 function paay_checkout()
 {
-if ('get' !== strtolower($_SERVER['REQUEST_METHOD'])) {
-  return;
-}
+    if ('get' !== strtolower($_SERVER['REQUEST_METHOD'])) {
+        return;
+    }
+
     $gateway = new Paay_Gateway();
     $button = $gateway->settings['PAAYButton'] == "yes";
 
     echo paay_template('paay_button', $var = array('visible' => $button));
 }
 
-function paay_wc()
+/**
+ * Handler methods
+ */
+function paay_handler()
 {
-    static $paay_wc = null;
+    $module = trim(@$_GET['paay-module']);
 
-    if (null === $paay_wc) {
-        global $woocommerce;
-        $paay_wc = new Paay_WooCommerce($woocommerce);
+    if (!in_array($module, array('createTransaction', 'cancelTransaction', 'awaitingApproval', 'approveWithout3ds'))) {
+        return;
     }
 
-    return $paay_wc;
-}
-
-function paay_api()
-{
-    static $api = null;
-    $gateway = new Paay_Gateway();
-
-    if (null === $api) {
-        $api = new Paay_ApiClient(
-            $gateway->settings['paay_host'],
-            $gateway->settings['paay_key'],
-            $gateway->settings['paay_secret'],
-            paay_wc()
-        );
-    }
-
-    return $api;
+    $module = 'paay_'.$module.'Handler';
+    $response = $module();
+    header('content-type:application/javascript');
+    echo $response;
+    exit;
 }
 
 function paay_createTransactionHandler()
@@ -201,20 +228,6 @@ function paay_awaitingApprovalHandler()
     }
 }
 
-/**
- * Old - to remove
- */
-function paay_sendWebAppLinkHandler()
-{
-    try {
-        paay_api()->sendWebAppLink($_GET['order_id'], $_GET['telephone']);
-
-        return 'return true;';
-    } catch (\Exception $e) {
-        return 'paayWoo.api.error("'.$e->getMessage().'")';
-    }
-}
-
 function paay_approveWithout3dsHandler()
 {
     try {
@@ -241,20 +254,9 @@ function paay_approveWithout3dsHandler()
     }
 }
 
-function paay_handler()
-{
-    $module = trim(@$_GET['paay-module']);
-
-    if (!in_array($module, array('createTransaction', 'cancelTransaction', 'awaitingApproval', 'sendWebAppLink', 'approveWithout3ds'))) {
-        return;
-    }
-
-    $module = 'paay_'.$module.'Handler';
-    $response = $module();
-    header('content-type:application/javascript');
-    echo $response;
-    exit;
-}
+/**
+ * Templates methods
+ */
 
 function paay_template($template, $var = array())
 {

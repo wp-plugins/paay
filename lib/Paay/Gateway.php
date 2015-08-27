@@ -308,7 +308,7 @@ class Paay_Gateway extends WC_Payment_Gateway
         return '<script type="text/javascript">;
 
             var numberField = jQuery("#paay_pan");
-            var imgSrc = "'. paayPluginPath() .'images/paay/";
+            var imgSrc = "https://plugins.paay.co/images/paay/cards/";
             var amex = imgSrc+"amex.gif";
             var visa = imgSrc+"visa.gif";
             var mc = imgSrc+"mastercard.gif";

@@ -126,8 +126,6 @@ class Paay_WooCommerce
             update_post_meta($order->id, '_'.'order_total', $order_total);
             $order->payment_complete();
 
-            // $this->getCart()->empty_cart(); //XXX: WooCommerce won't let you go to "Order Status Page" unless you have something in Cart...
-
             return;
         }
 

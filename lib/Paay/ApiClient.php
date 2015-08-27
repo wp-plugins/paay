@@ -216,31 +216,6 @@ class Paay_ApiClient
         return json_encode($result);
     }
 
-    public function sendWebAppLink($orderId, $phone)
-    {
-        if (empty($orderId)) {
-            throw new Paay_Exception_ApiException('You must provide order number');
-        }
-
-        // $order = new WC_Order($orderId);
-        $transactionId = get_post_meta($orderId, 'transaction_id', true);
-
-        if (empty($transactionId)) {
-            throw new Paay_Exception_ApiException("Transaction id doeasn't exists");
-        }
-
-        $request = new Paay_Connection_Request();
-        $request->resource = 'transactions/send-webapp/'.$transactionId.'.json';
-        $request->body = array('phone' => $phone);
-
-        $response = $this->connection->sendRequest($request);
-
-        return json_decode($response->body);
-    }
-
-    /**
-     * @param string $transactionId
-     */
     public function checkTransactionStatus($orderId)
     {
         if (empty($orderId)) {
@@ -279,12 +254,6 @@ class Paay_ApiClient
         return json_encode($result);
     }
 
-    /**
-     * @param string $paramName
-     * @param string $paramValue
-     * @return stdClass
-     * @throws Mage_Paay_Exception
-     */
     protected function getCustomerBy($paramName, $paramValue)
     {
         $request = new Paay_Connection_Request();
