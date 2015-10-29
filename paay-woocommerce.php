@@ -3,7 +3,7 @@
 Plugin Name: PAAY for WooCommerce
 Plugin URI: http://www.paay.co/contact/
 Description: Support for PAAY payments in WooCommerce
-Version: 0.26
+Version: 1.1
 Requires at least: 4.3
 Depends: WooCommerce
 Tested up to: 4.3
@@ -115,38 +115,6 @@ function paay_wc()
 }
 
 /**
- * Standalone checkout process
- */
-function standalone_checkout()
-{
-    if ('paay-3ds-form' !== @$_GET['paay-module']) {
-        return;
-    }
-
-    $gateway = new Paay_Gateway();
-    $data = file_get_contents(get_temp_dir().'/3ds/'.@$_GET['order'].'.dat');
-    $data = json_decode($data, true);
-    $is_visible = $gateway->settings['paay_3ds_strategy'];
-    if ('always' === $is_visible) {
-        $data['is_form_visible'] = true;
-    } elseif ('never' === $is_visible) {
-        $data['is_form_visible'] = false;
-    }
-
-    if ('get' !== strtolower($_SERVER['REQUEST_METHOD'])) {
-        $result = array(
-            'result' => 'success',
-            'messages' => paay_template('3dsautosubmit', $data),
-        );
-        echo json_encode($result);
-        exit;
-    } else {
-        echo paay_template('3dsautosubmit', $data);
-        exit;
-    }
-}
-
-/**
  * Show PAAY Button
  */
 function paay_checkout()
@@ -177,6 +145,38 @@ function paay_handler()
     header('content-type:application/javascript');
     echo $response;
     exit;
+}
+
+/**
+ * Standalone checkout process
+ */
+function standalone_checkout()
+{
+    if ('paay-3ds-form' !== @$_GET['paay-module']) {
+        return;
+    }
+
+    $gateway = new Paay_Gateway();
+    $data = file_get_contents(get_temp_dir().'/3ds/'.@$_GET['order'].'.dat');
+    $data = json_decode($data, true);
+    $is_visible = $gateway->settings['paay_3ds_strategy'];
+    if ('always' === $is_visible) {
+        $data['is_form_visible'] = true;
+    } elseif ('never' === $is_visible) {
+        $data['is_form_visible'] = false;
+    }
+
+    if ('get' !== strtolower($_SERVER['REQUEST_METHOD'])) {
+        $result = array(
+            'result' => 'success',
+            'messages' => paay_template('3dsautosubmit', $data),
+        );
+        echo json_encode($result);
+        exit;
+    } else {
+        echo paay_template('3dsautosubmit', $data);
+        exit;
+    }
 }
 
 function paay_createTransactionHandler()

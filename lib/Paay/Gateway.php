@@ -30,12 +30,12 @@ class Paay_Gateway extends WC_Payment_Gateway
             'enabled' => array(
                 'title' => __('Enable/Disable', 'woocommercepaay'),
                 'type' => 'checkbox',
-                'label' => __('Enable Credit Card powered by PAAY', 'woocommercepaay'),
+                'label' => __('Enable PAAY Standard Checkout', 'woocommercepaay'),
                 'default' => 'yes'
             ),
             'PAAYButton' => array(
                 'type' => 'checkbox',
-                'label' => __('Enable PAAY Button', 'woocommercepaay'),
+                'label' => __('Enable PAAY Mobile Wallet Checkout', 'woocommercepaay'),
                 'default' => 'yes'
             ),
             'paay_key' => array(
